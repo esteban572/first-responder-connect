@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
-import { Home, Briefcase, User, MessageCircle, Bell, Shield, LogOut, Search, Settings } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Home, Briefcase, User, MessageCircle, Bell, Shield, Search, Settings, Newspaper } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { getUnreadCount, subscribeToMessages } from "@/lib/messageService";
 
 export function DesktopSidebar() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   // Load unread count
@@ -49,22 +46,13 @@ export function DesktopSidebar() {
   const navItems = [
     { icon: Home, label: "Feed", path: "/feed", badge: 0 },
     { icon: Briefcase, label: "Job Board", path: "/jobs", badge: 0 },
+    { icon: Newspaper, label: "Blog", path: "/blog", badge: 0 },
     { icon: Search, label: "Search Users", path: "/search", badge: 0 },
     { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadMessages },
     { icon: Bell, label: "Alerts", path: "/alerts", badge: 0 },
     { icon: User, label: "My Profile", path: "/profile", badge: 0 },
+    { icon: Settings, label: "Settings", path: "/settings", badge: 0 },
   ];
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.success('Signed out successfully');
-      navigate('/');
-    } catch (error) {
-      toast.error('Failed to sign out');
-      console.error('Sign out error:', error);
-    }
-  };
 
   const getUserInitials = () => {
     if (!user) return 'GU';
@@ -122,11 +110,6 @@ export function DesktopSidebar() {
                 )}
               </div>
               <span className="font-medium">{item.label}</span>
-              {item.badge > 0 && (
-                <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  {item.badge > 99 ? '99+' : item.badge}
-                </span>
-              )}
             </Link>
           );
         })}
@@ -152,8 +135,8 @@ export function DesktopSidebar() {
       </nav>
 
       {/* User Section */}
-      <div className="p-4 border-t border-white/10 space-y-2">
-        <div className="flex items-center gap-3 px-4 py-3">
+      <div className="p-4 border-t border-white/10">
+        <Link to="/profile" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all duration-200">
           <Avatar className="w-10 h-10 border-2 border-white/20">
             <AvatarImage src={user?.user_metadata?.avatar_url} />
             <AvatarFallback className="bg-white/20 text-white text-sm">
@@ -166,18 +149,7 @@ export function DesktopSidebar() {
               {user?.email || 'Sign in to continue'}
             </p>
           </div>
-        </div>
-        {user && (
-          <Button
-            onClick={handleSignOut}
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-white/70 hover:text-white hover:bg-white/10"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
-        )}
+        </Link>
       </div>
     </aside>
   );

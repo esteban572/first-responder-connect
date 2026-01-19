@@ -79,26 +79,51 @@ export async function getDashboardStats(): Promise<DashboardStats> {
  * Get all posts for admin management with search capability
  */
 export async function getAllPosts(search?: string): Promise<Post[]> {
+  // First, fetch all posts
   let query = supabase
     .from('posts')
-    .select(`
-      *,
-      author:profiles!posts_user_id_fkey(id, full_name, role, avatar_url)
-    `)
-    .order('created_at', { ascending: false });
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(100);
 
   if (search) {
     query = query.ilike('content', `%${search}%`);
   }
 
-  const { data, error } = await query.limit(100);
+  const { data: postsData, error: postsError } = await query;
 
-  if (error) {
-    console.error('Error fetching posts:', error);
+  if (postsError) {
+    console.error('Error fetching posts:', postsError);
     return [];
   }
 
-  return data || [];
+  if (!postsData || postsData.length === 0) {
+    return [];
+  }
+
+  // Get unique user IDs from posts
+  const userIds = [...new Set(postsData.map(post => post.user_id))];
+
+  // Fetch profiles for these users
+  const { data: profilesData, error: profilesError } = await supabase
+    .from('profiles')
+    .select('id, full_name, role, avatar_url')
+    .in('id', userIds);
+
+  if (profilesError) {
+    console.error('Error fetching profiles:', profilesError);
+  }
+
+  // Create a map of user_id to profile
+  const profilesMap = new Map(
+    (profilesData || []).map(profile => [profile.id, profile])
+  );
+
+  // Combine posts with author info
+  return postsData.map((post: any) => ({
+    ...post,
+    author: profilesMap.get(post.user_id) || null,
+  }));
 }
 
 /**

@@ -22,6 +22,12 @@ import PostManagement from "./pages/admin/PostManagement";
 import JobManagement from "./pages/admin/JobManagement";
 import JobEditor from "./pages/admin/JobEditor";
 import ApplicationManagement from "./pages/admin/ApplicationManagement";
+import BlogManagement from "./pages/admin/BlogManagement";
+import BlogEditor from "./pages/admin/BlogEditor";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import SavedArticles from "./pages/SavedArticles";
+import Settings from "./pages/Settings";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -91,6 +97,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
             {/* Admin Routes */}
             <Route
               path="/admin"
@@ -146,6 +160,47 @@ const App = () => (
                 <AdminRoute>
                   <ApplicationManagement />
                 </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/blog"
+              element={
+                <AdminRoute>
+                  <BlogManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/blog/:id"
+              element={
+                <AdminRoute>
+                  <BlogEditor />
+                </AdminRoute>
+              }
+            />
+            {/* Blog Routes */}
+            <Route
+              path="/blog"
+              element={
+                <ProtectedRoute>
+                  <Blog />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/blog/saved"
+              element={
+                <ProtectedRoute>
+                  <SavedArticles />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/blog/:slug"
+              element={
+                <ProtectedRoute>
+                  <BlogPost />
+                </ProtectedRoute>
               }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
