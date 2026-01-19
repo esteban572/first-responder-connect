@@ -21,6 +21,7 @@ import AnnouncementEditor from "./pages/admin/AnnouncementEditor";
 import PostManagement from "./pages/admin/PostManagement";
 import JobManagement from "./pages/admin/JobManagement";
 import JobEditor from "./pages/admin/JobEditor";
+import ApplicationManagement from "./pages/admin/ApplicationManagement";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -136,6 +137,14 @@ const App = () => (
               element={
                 <AdminRoute>
                   <JobEditor />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/applications"
+              element={
+                <AdminRoute>
+                  <ApplicationManagement />
                 </AdminRoute>
               }
             />

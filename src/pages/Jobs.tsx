@@ -1,27 +1,72 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { JobCard } from "@/components/jobs/JobCard";
 import { JobFilters } from "@/components/jobs/JobFilters";
-import { Search } from "lucide-react";
+import { JobApplicationModal } from "@/components/jobs/JobApplicationModal";
+import { Search, MapPin, DollarSign, Building2, ChevronRight, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Job, JobCategory } from "@/types/job";
 import { getActiveJobs } from "@/lib/jobService";
+import { hasApplied } from "@/lib/applicationService";
+import { useAuth } from "@/contexts/AuthContext";
+
+const categoryStyles: Record<JobCategory, string> = {
+  travel: "job-badge-travel",
+  w2: "job-badge-w2",
+  "1099": "job-badge-1099",
+  contract: "job-badge-contract",
+  temp: "job-badge-temp",
+  staffing: "job-badge-staffing",
+  crisis: "job-badge-crisis",
+};
+
+const categoryLabels: Record<JobCategory, string> = {
+  travel: "Travel",
+  w2: "W2",
+  "1099": "1099",
+  contract: "Contract",
+  temp: "Temp",
+  staffing: "Staffing",
+  crisis: "Crisis",
+};
 
 const Jobs = () => {
+  const { user } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<JobCategory | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [applicationModalOpen, setApplicationModalOpen] = useState(false);
+  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadJobs();
   }, []);
+
+  useEffect(() => {
+    if (user && jobs.length > 0) {
+      checkAppliedJobs();
+    }
+  }, [user, jobs]);
 
   const loadJobs = async () => {
     setLoading(true);
     const data = await getActiveJobs();
     setJobs(data);
     setLoading(false);
+  };
+
+  const checkAppliedJobs = async () => {
+    const applied = new Set<string>();
+    for (const job of jobs) {
+      const isApplied = await hasApplied(job.id);
+      if (isApplied) {
+        applied.add(job.id);
+      }
+    }
+    setAppliedJobs(applied);
   };
 
   const filteredJobs = jobs.filter((job) => {
@@ -33,7 +78,6 @@ const Jobs = () => {
     return matchesFilter && matchesSearch;
   });
 
-  // Format the date for display
   const formatPosted = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -45,6 +89,17 @@ const Jobs = () => {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays === 1) return '1d ago';
     return `${diffDays}d ago`;
+  };
+
+  const handleApply = (job: Job) => {
+    setSelectedJob(job);
+    setApplicationModalOpen(true);
+  };
+
+  const handleApplicationSuccess = () => {
+    if (selectedJob) {
+      setAppliedJobs((prev) => new Set(prev).add(selectedJob.id));
+    }
   };
 
   return (
@@ -94,15 +149,82 @@ const Jobs = () => {
               ))}
             </div>
           ) : filteredJobs.length > 0 ? (
-            filteredJobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={{
-                  ...job,
-                  posted: formatPosted(job.created_at),
-                }}
-              />
-            ))
+            filteredJobs.map((job) => {
+              const isApplied = appliedJobs.has(job.id);
+              return (
+                <article
+                  key={job.id}
+                  className={cn(
+                    "feed-card p-4 animate-fade-in",
+                    job.urgent && "ring-2 ring-accent/50"
+                  )}
+                >
+                  {job.urgent && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-accent uppercase tracking-wider">
+                        <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                        Urgent Fill
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={cn("job-badge", categoryStyles[job.category])}>
+                          {categoryLabels[job.category]}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{job.type}</span>
+                      </div>
+
+                      <h3 className="font-bold text-base mb-1 line-clamp-1">{job.title}</h3>
+
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
+                        <Building2 className="h-3.5 w-3.5" />
+                        <span>{job.company}</span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5" />
+                          <span>{job.location}</span>
+                        </div>
+                        <div className="flex items-center gap-1 font-semibold text-foreground">
+                          <DollarSign className="h-3.5 w-3.5" />
+                          <span>{job.salary}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatPosted(job.created_at)}
+                      </span>
+                      {isApplied ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled
+                          className="gap-1 text-green-600 border-green-200 bg-green-50"
+                        >
+                          <Check className="h-4 w-4" />
+                          Applied
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          className="bg-primary hover:bg-primary/90 gap-1"
+                          onClick={() => handleApply(job)}
+                        >
+                          Apply
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              );
+            })
           ) : (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No jobs found matching your criteria.</p>
@@ -110,6 +232,14 @@ const Jobs = () => {
           )}
         </div>
       </div>
+
+      {/* Application Modal */}
+      <JobApplicationModal
+        job={selectedJob}
+        open={applicationModalOpen}
+        onOpenChange={setApplicationModalOpen}
+        onSuccess={handleApplicationSuccess}
+      />
     </AppLayout>
   );
 };

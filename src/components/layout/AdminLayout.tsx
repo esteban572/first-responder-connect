@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Megaphone, FileText, Briefcase, ArrowLeft, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, Megaphone, FileText, Briefcase, Users, ArrowLeft, LogOut, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
   { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
   { icon: Briefcase, label: 'Jobs', path: '/admin/jobs' },
+  { icon: Users, label: 'Applications', path: '/admin/applications' },
   { icon: FileText, label: 'Posts', path: '/admin/posts' },
 ];
 
