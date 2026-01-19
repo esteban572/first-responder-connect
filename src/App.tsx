@@ -9,6 +9,7 @@ import { AdminRoute } from "@/components/AdminRoute";
 import Home from "./pages/Home";
 import Feed from "./pages/Feed";
 import Jobs from "./pages/Jobs";
+import JobDetail from "./pages/JobDetail";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
 import Alerts from "./pages/Alerts";
@@ -55,6 +56,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Jobs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/jobs/:id"
+              element={
+                <ProtectedRoute>
+                  <JobDetail />
                 </ProtectedRoute>
               }
             />

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { JobApplicationModal } from "@/components/jobs/JobApplicationModal";
@@ -169,7 +170,7 @@ const Jobs = () => {
                   )}
 
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
+                    <Link to={`/jobs/${job.id}`} className="flex-1 min-w-0 group">
                       <div className="flex items-center gap-2 mb-2">
                         <span className={cn("job-badge", categoryStyles[job.category])}>
                           {categoryLabels[job.category]}
@@ -177,7 +178,9 @@ const Jobs = () => {
                         <span className="text-xs text-muted-foreground">{job.type}</span>
                       </div>
 
-                      <h3 className="font-bold text-base mb-1 line-clamp-1">{job.title}</h3>
+                      <h3 className="font-bold text-base mb-1 line-clamp-1 group-hover:text-primary transition-colors">
+                        {job.title}
+                      </h3>
 
                       <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                         <Building2 className="h-3.5 w-3.5" />
@@ -194,7 +197,7 @@ const Jobs = () => {
                           <span>{job.salary}</span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     <div className="flex flex-col items-end gap-2">
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
