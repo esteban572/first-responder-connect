@@ -9,8 +9,8 @@ import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getCurrentUserProfile, getConnectionsCount } from '@/lib/userService';
-import { getCurrentUserMedia } from '@/lib/mediaService';
+import { getCurrentUserProfile, getConnectionsCount, upsertUserProfile } from '@/lib/userService';
+import { getCurrentUserMedia, uploadMedia } from '@/lib/mediaService';
 import { getUserPosts } from '@/lib/postService';
 import { getUserActivities, Activity } from '@/lib/activityService';
 import { getMyExperiences } from '@/lib/experienceService';
@@ -92,6 +92,38 @@ const Profile = () => {
     loadProfile();
   };
 
+  const handleAvatarUpload = async (file: File) => {
+    if (!authUser) return;
+
+    try {
+      const result = await uploadMedia(file, authUser.id);
+      if (result) {
+        await upsertUserProfile({ avatar_url: result.url });
+        toast.success('Profile photo updated');
+        loadProfile();
+      }
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Failed to upload profile photo');
+    }
+  };
+
+  const handleCoverUpload = async (file: File) => {
+    if (!authUser) return;
+
+    try {
+      const result = await uploadMedia(file, authUser.id);
+      if (result) {
+        await upsertUserProfile({ cover_image_url: result.url });
+        toast.success('Cover photo updated');
+        loadProfile();
+      }
+    } catch (error) {
+      console.error('Error uploading cover:', error);
+      toast.error('Failed to upload cover photo');
+    }
+  };
+
   if (loading) {
     return (
       <AppLayout>
@@ -154,7 +186,12 @@ const Profile = () => {
     <AppLayout>
       <div className="max-w-2xl mx-auto py-4 md:py-6">
         <div className="px-4 md:px-0 space-y-4">
-          <ProfileHeader user={profileHeaderData}>
+          <ProfileHeader
+            user={profileHeaderData}
+            isOwnProfile={true}
+            onAvatarUpload={handleAvatarUpload}
+            onCoverUpload={handleCoverUpload}
+          >
             <Button
               variant="outline"
               size="sm"
