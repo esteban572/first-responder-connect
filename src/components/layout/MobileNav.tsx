@@ -50,11 +50,10 @@ export function MobileNav() {
     setUnreadMessages(count);
   };
 
-  // Primary items first, then secondary items
+  // Primary items first, then secondary items, settings last
   const primaryItems = [
     { icon: Home, label: "Feed", path: "/feed", badge: 0 },
     { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadMessages },
-    { icon: Settings, label: "Settings", path: "/settings", badge: 0 },
     { icon: User, label: "Profile", path: "/profile", badge: 0 },
   ];
 
@@ -69,10 +68,10 @@ export function MobileNav() {
     { icon: Bell, label: "Alerts", path: "/alerts", badge: 0 },
   ];
 
-  // Add Admin for admins
+  // Settings at the end, Admin after settings for admins
   const navItems = isAdmin
-    ? [...primaryItems, ...secondaryItems, { icon: Settings, label: "Admin", path: "/admin", badge: 0 }]
-    : [...primaryItems, ...secondaryItems];
+    ? [...primaryItems, ...secondaryItems, { icon: Settings, label: "Settings", path: "/settings", badge: 0 }, { icon: Settings, label: "Admin", path: "/admin", badge: 0 }]
+    : [...primaryItems, ...secondaryItems, { icon: Settings, label: "Settings", path: "/settings", badge: 0 }];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
