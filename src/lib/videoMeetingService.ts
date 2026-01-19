@@ -1,7 +1,7 @@
 // Video Meeting Service Layer
 // Handles Jitsi video conferencing integration
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import {
   VideoMeeting,
   VideoMeetingCreate,

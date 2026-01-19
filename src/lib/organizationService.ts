@@ -1,7 +1,7 @@
 // Organization Service Layer
 // Handles multi-tenant operations, members, and invites
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import {
   Organization,
   OrganizationCreate,
