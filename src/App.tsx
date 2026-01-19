@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { OrganizationProvider } from "@/contexts/OrganizationContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import Home from "./pages/Home";
@@ -41,6 +42,9 @@ import GearReviews from "./pages/GearReviews";
 import GearDetail from "./pages/GearDetail";
 import AgencyReviews from "./pages/AgencyReviews";
 import AgencyDetail from "./pages/AgencyDetail";
+import Meetings from "./pages/Meetings";
+import MeetingRoom from "./pages/MeetingRoom";
+import OrganizationSettings from "./pages/OrganizationSettings";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -48,11 +52,12 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
+      <OrganizationProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route
@@ -319,12 +324,39 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            {/* Video Meeting Routes */}
+            <Route
+              path="/meetings"
+              element={
+                <ProtectedRoute>
+                  <Meetings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meeting/:roomId"
+              element={
+                <ProtectedRoute>
+                  <MeetingRoom />
+                </ProtectedRoute>
+              }
+            />
+            {/* Organization Routes */}
+            <Route
+              path="/organization/settings"
+              element={
+                <ProtectedRoute>
+                  <OrganizationSettings />
+                </ProtectedRoute>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </AuthProvider>
+    </OrganizationProvider>
+  </AuthProvider>
   </QueryClientProvider>
 );
 
