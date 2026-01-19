@@ -55,6 +55,8 @@ export function MobileNav() {
     { icon: Home, label: "Feed", path: "/feed", badge: 0 },
     { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadMessages },
     { icon: User, label: "Profile", path: "/profile", badge: 0 },
+    { icon: Bell, label: "Alerts", path: "/alerts", badge: 0 },
+    { icon: Search, label: "Search", path: "/search", badge: 0 },
   ];
 
   const secondaryItems = [
@@ -64,8 +66,6 @@ export function MobileNav() {
     { icon: Award, label: "Credentials", path: "/credentials", badge: expiringCredentials },
     { icon: Wrench, label: "Gear", path: "/gear", badge: 0 },
     { icon: Building2, label: "Agencies", path: "/agencies", badge: 0 },
-    { icon: Search, label: "Search", path: "/search", badge: 0 },
-    { icon: Bell, label: "Alerts", path: "/alerts", badge: 0 },
   ];
 
   // Settings at the end, Admin after settings for admins
