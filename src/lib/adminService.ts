@@ -7,6 +7,14 @@ export interface DashboardStats {
   totalActiveAnnouncements: number;
   newUsersToday: number;
   newPostsToday: number;
+  activeUsersOnline: number;
+  activeUsersToday: number;
+  commentsToday: number;
+  likesToday: number;
+  connectionsToday: number;
+  pendingReports: number;
+  totalJobs: number;
+  applicationsToday: number;
 }
 
 /**
@@ -34,9 +42,13 @@ export async function checkIsAdmin(): Promise<boolean> {
  * Get dashboard statistics
  */
 export async function getDashboardStats(): Promise<DashboardStats> {
+  const now = new Date();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayIso = today.toISOString();
+
+  // 5 minutes ago for "online" status
+  const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
 
   // Get total users count
   const { count: totalUsers } = await supabase
@@ -66,13 +78,83 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     .select('*', { count: 'exact', head: true })
     .gte('created_at', todayIso);
 
+  // Get active users online (last_seen within 5 minutes)
+  const { count: activeUsersOnline } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+    .gte('last_seen', fiveMinutesAgo);
+
+  // Get active users today (last_seen today)
+  const { count: activeUsersToday } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+    .gte('last_seen', todayIso);
+
+  // Get comments today
+  const { count: commentsToday } = await supabase
+    .from('comments')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', todayIso);
+
+  // Get likes today
+  const { count: likesToday } = await supabase
+    .from('post_likes')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', todayIso);
+
+  // Get new connections today
+  const { count: connectionsToday } = await supabase
+    .from('connections')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'accepted')
+    .gte('created_at', todayIso);
+
+  // Get pending reports count
+  const { count: pendingReports } = await supabase
+    .from('reports')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'pending');
+
+  // Get total active jobs
+  const { count: totalJobs } = await supabase
+    .from('jobs')
+    .select('*', { count: 'exact', head: true })
+    .eq('is_active', true);
+
+  // Get applications today
+  const { count: applicationsToday } = await supabase
+    .from('applications')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', todayIso);
+
   return {
     totalUsers: totalUsers || 0,
     totalPosts: totalPosts || 0,
     totalActiveAnnouncements: totalActiveAnnouncements || 0,
     newUsersToday: newUsersToday || 0,
     newPostsToday: newPostsToday || 0,
+    activeUsersOnline: activeUsersOnline || 0,
+    activeUsersToday: activeUsersToday || 0,
+    commentsToday: commentsToday || 0,
+    likesToday: likesToday || 0,
+    connectionsToday: connectionsToday || 0,
+    pendingReports: pendingReports || 0,
+    totalJobs: totalJobs || 0,
+    applicationsToday: applicationsToday || 0,
   };
+}
+
+/**
+ * Update user's last seen timestamp
+ */
+export async function updateLastSeen(): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase
+    .from('profiles')
+    .update({ last_seen: new Date().toISOString() })
+    .eq('id', user.id);
 }
 
 /**

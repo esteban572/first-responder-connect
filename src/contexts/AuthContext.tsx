@@ -49,6 +49,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAdminStatus();
   }, [user]);
 
+  // Update last_seen timestamp for online tracking
+  useEffect(() => {
+    if (!user) return;
+
+    const updateLastSeen = async () => {
+      await supabase
+        .from('profiles')
+        .update({ last_seen: new Date().toISOString() })
+        .eq('id', user.id);
+    };
+
+    // Update immediately when user logs in
+    updateLastSeen();
+
+    // Then update every minute
+    const interval = setInterval(updateLastSeen, 60000);
+
+    // Also update on page visibility change (when user returns to tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        updateLastSeen();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user]);
+
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
