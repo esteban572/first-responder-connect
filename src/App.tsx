@@ -37,6 +37,10 @@ import SavedArticles from "./pages/SavedArticles";
 import Settings from "./pages/Settings";
 import Credentials from "./pages/Credentials";
 import CredentialShowcase from "./pages/CredentialShowcase";
+import GearReviews from "./pages/GearReviews";
+import GearDetail from "./pages/GearDetail";
+import AgencyReviews from "./pages/AgencyReviews";
+import AgencyDetail from "./pages/AgencyDetail";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -256,6 +260,40 @@ const App = () => (
             />
             {/* Public credential showcase (no auth required) */}
             <Route path="/user/:userId/credentials" element={<CredentialShowcase />} />
+            {/* Gear Reviews Routes */}
+            <Route
+              path="/gear"
+              element={
+                <ProtectedRoute>
+                  <GearReviews />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/gear/:id"
+              element={
+                <ProtectedRoute>
+                  <GearDetail />
+                </ProtectedRoute>
+              }
+            />
+            {/* Agency Reviews Routes */}
+            <Route
+              path="/agencies"
+              element={
+                <ProtectedRoute>
+                  <AgencyReviews />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/agencies/:id"
+              element={
+                <ProtectedRoute>
+                  <AgencyDetail />
+                </ProtectedRoute>
+              }
+            />
             {/* Blog Routes */}
             <Route
               path="/blog"

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { JobApplicationModal } from "@/components/jobs/JobApplicationModal";
-import { Search, MapPin, DollarSign, Building2, ChevronRight, Check } from "lucide-react";
+import { Search, MapPin, DollarSign, Building2, ChevronRight, Check, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -108,8 +108,18 @@ const Jobs = () => {
       <div className="max-w-2xl mx-auto py-4 md:py-6">
         {/* Header */}
         <div className="px-4 md:px-0 mb-6">
-          <h1 className="text-2xl font-bold font-display mb-1">Job Board</h1>
-          <p className="text-muted-foreground">Find your next assignment</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold font-display mb-1">Job Board</h1>
+              <p className="text-muted-foreground">Find your next assignment</p>
+            </div>
+            <Link to="/agencies">
+              <Button variant="outline" className="gap-2">
+                <Star className="h-4 w-4" />
+                <span className="hidden sm:inline">Agency Reviews</span>
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Search */}
