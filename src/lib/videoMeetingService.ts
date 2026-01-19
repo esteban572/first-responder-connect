@@ -62,14 +62,7 @@ export async function createMeeting(
 export async function getMeeting(id: string): Promise<VideoMeeting | null> {
   const { data, error } = await supabase
     .from('video_meetings')
-    .select(`
-      *,
-      host:profiles!host_id (
-        id,
-        full_name,
-        avatar_url
-      )
-    `)
+    .select('*')
     .eq('id', id)
     .single();
 
@@ -78,26 +71,45 @@ export async function getMeeting(id: string): Promise<VideoMeeting | null> {
     return null;
   }
 
+  // Fetch host info separately
+  if (data?.host_id) {
+    const { data: hostData } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .eq('id', data.host_id)
+      .single();
+
+    if (hostData) {
+      data.host = hostData;
+    }
+  }
+
   return data;
 }
 
 export async function getMeetingByRoomId(roomId: string): Promise<VideoMeeting | null> {
   const { data, error } = await supabase
     .from('video_meetings')
-    .select(`
-      *,
-      host:profiles!host_id (
-        id,
-        full_name,
-        avatar_url
-      )
-    `)
+    .select('*')
     .eq('room_id', roomId)
     .single();
 
   if (error) {
     console.error('Error fetching meeting by room:', error);
     return null;
+  }
+
+  // Fetch host info separately
+  if (data?.host_id) {
+    const { data: hostData } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .eq('id', data.host_id)
+      .single();
+
+    if (hostData) {
+      data.host = hostData;
+    }
   }
 
   return data;
@@ -113,14 +125,7 @@ export async function getOrganizationMeetings(
 ): Promise<VideoMeeting[]> {
   let query = supabase
     .from('video_meetings')
-    .select(`
-      *,
-      host:profiles!host_id (
-        id,
-        full_name,
-        avatar_url
-      )
-    `)
+    .select('*')
     .eq('organization_id', orgId)
     .order('scheduled_at', { ascending: true, nullsFirst: false });
 
@@ -145,6 +150,22 @@ export async function getOrganizationMeetings(
     return [];
   }
 
+  // Fetch host info for all meetings
+  if (data && data.length > 0) {
+    const hostIds = [...new Set(data.map(m => m.host_id))];
+    const { data: hosts } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .in('id', hostIds);
+
+    if (hosts) {
+      const hostMap = new Map(hosts.map(h => [h.id, h]));
+      data.forEach(meeting => {
+        meeting.host = hostMap.get(meeting.host_id) || null;
+      });
+    }
+  }
+
   return data || [];
 }
 
@@ -157,15 +178,8 @@ export async function getUserMeetings(options?: {
 
   let query = supabase
     .from('video_meetings')
-    .select(`
-      *,
-      host:profiles!host_id (
-        id,
-        full_name,
-        avatar_url
-      )
-    `)
-    .or(`host_id.eq.${user.id}`)
+    .select('*')
+    .eq('host_id', user.id)
     .order('scheduled_at', { ascending: true, nullsFirst: false });
 
   if (options?.status) {
@@ -183,6 +197,21 @@ export async function getUserMeetings(options?: {
   if (error) {
     console.error('Error fetching user meetings:', error);
     return [];
+  }
+
+  // Fetch host info (will be the current user)
+  if (data && data.length > 0) {
+    const { data: hostData } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .eq('id', user.id)
+      .single();
+
+    if (hostData) {
+      data.forEach(meeting => {
+        meeting.host = hostData;
+      });
+    }
   }
 
   return data || [];
