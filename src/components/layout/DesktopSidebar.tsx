@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Briefcase, User, MessageCircle, Bell, Shield, Search, Settings, Newspaper, CalendarDays, Award, Wrench, Building2 } from "lucide-react";
+import { Home, Briefcase, User, MessageCircle, Bell, Shield, Search, Settings, Newspaper, CalendarDays, Award, Wrench, Building2, Video } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -55,6 +55,7 @@ export function DesktopSidebar() {
     { icon: Home, label: "Feed", path: "/feed", badge: 0 },
     { icon: Briefcase, label: "Job Board", path: "/jobs", badge: 0 },
     { icon: CalendarDays, label: "Events", path: "/events", badge: 0 },
+    { icon: Video, label: "Meetings", path: "/meetings", badge: 0 },
     { icon: Newspaper, label: "Blog", path: "/blog", badge: 0 },
     { icon: Award, label: "Credentials", path: "/credentials", badge: expiringCredentials },
     { icon: Wrench, label: "Gear Reviews", path: "/gear", badge: 0 },
