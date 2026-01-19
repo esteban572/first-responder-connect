@@ -71,6 +71,20 @@ function formatIcsDateTime(dateString: string): string {
 }
 
 /**
+ * Format datetime for ICS with timezone (local time format YYYYMMDDTHHMMSS)
+ */
+function formatIcsLocalDateTime(dateString: string): string {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+}
+
+/**
  * Generate a unique UID for the event
  */
 function generateUid(eventId: string): string {
@@ -104,7 +118,14 @@ export function generateIcs(event: Event): string {
       endDate.setDate(endDate.getDate() + 1);
       lines.push(foldLine(`DTEND;VALUE=DATE:${formatIcsDate(endDate.toISOString())}`));
     }
+  } else if (event.timezone && event.timezone !== 'UTC') {
+    // Use TZID for timezone-aware events
+    lines.push(foldLine(`DTSTART;TZID=${event.timezone}:${formatIcsLocalDateTime(event.start_date)}`));
+    if (event.end_date) {
+      lines.push(foldLine(`DTEND;TZID=${event.timezone}:${formatIcsLocalDateTime(event.end_date)}`));
+    }
   } else {
+    // Use UTC for events without timezone or UTC timezone
     lines.push(foldLine(`DTSTART:${formatIcsDateTime(event.start_date)}`));
     if (event.end_date) {
       lines.push(foldLine(`DTEND:${formatIcsDateTime(event.end_date)}`));
@@ -160,6 +181,11 @@ export function generateMultipleIcs(events: Event[]): string {
         const endDate = new Date(event.end_date);
         endDate.setDate(endDate.getDate() + 1);
         lines.push(foldLine(`DTEND;VALUE=DATE:${formatIcsDate(endDate.toISOString())}`));
+      }
+    } else if (event.timezone && event.timezone !== 'UTC') {
+      lines.push(foldLine(`DTSTART;TZID=${event.timezone}:${formatIcsLocalDateTime(event.start_date)}`));
+      if (event.end_date) {
+        lines.push(foldLine(`DTEND;TZID=${event.timezone}:${formatIcsLocalDateTime(event.end_date)}`));
       }
     } else {
       lines.push(foldLine(`DTSTART:${formatIcsDateTime(event.start_date)}`));

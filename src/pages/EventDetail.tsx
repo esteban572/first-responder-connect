@@ -16,7 +16,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EventResponseButtons } from '@/components/events/EventResponseButtons';
 import { AttendeesModal } from '@/components/events/AttendeesModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { Event, EventResponse } from '@/types/event';
+import { Event, EventResponse, EVENT_TIMEZONES } from '@/types/event';
 import { getEventById, getUserEventResponse } from '@/lib/eventService';
 import { downloadEventIcs } from '@/lib/icsGenerator';
 import { toast } from 'sonner';
@@ -104,6 +104,10 @@ export default function EventDetail() {
       hour: 'numeric',
       minute: '2-digit',
     });
+  };
+
+  const getTimezoneAbbr = (tz: string) => {
+    return EVENT_TIMEZONES.find((t) => t.value === tz)?.abbr || tz;
   };
 
   const isPastEvent = event ? new Date(event.start_date) < new Date() : false;
@@ -225,6 +229,11 @@ export default function EventDetail() {
                         <p className="font-medium text-gray-900">
                           {formatTime(event.start_date)}
                           {event.end_date && ` - ${formatTime(event.end_date)}`}
+                          {event.timezone && (
+                            <span className="text-gray-500 ml-1">
+                              ({getTimezoneAbbr(event.timezone)})
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>

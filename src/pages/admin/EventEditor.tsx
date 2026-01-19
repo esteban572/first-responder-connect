@@ -8,8 +8,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
-import { EventCreate } from '@/types/event';
+import { EventCreate, EVENT_TIMEZONES } from '@/types/event';
 import { getEventById, createEvent, updateEvent } from '@/lib/eventService';
 
 export default function EventEditor() {
@@ -29,6 +36,7 @@ export default function EventEditor() {
   const [endDate, setEndDate] = useState('');
   const [endTime, setEndTime] = useState('');
   const [isAllDay, setIsAllDay] = useState(false);
+  const [timezone, setTimezone] = useState('America/New_York');
   const [isActive, setIsActive] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
   const [maxAttendees, setMaxAttendees] = useState('');
@@ -61,6 +69,7 @@ export default function EventEditor() {
       }
 
       setIsAllDay(event.is_all_day);
+      setTimezone(event.timezone || 'America/New_York');
       setIsActive(event.is_active);
       setIsFeatured(event.is_featured);
       setMaxAttendees(event.max_attendees ? String(event.max_attendees) : '');
@@ -112,6 +121,7 @@ export default function EventEditor() {
       cover_image_url: coverImageUrl.trim() || undefined,
       start_date: startDateTime,
       end_date: endDateTime,
+      timezone,
       is_all_day: isAllDay,
       is_active: isActive,
       is_featured: isFeatured,
@@ -235,6 +245,25 @@ export default function EventEditor() {
                   <p className="text-sm text-gray-500">No specific start/end times</p>
                 </div>
                 <Switch checked={isAllDay} onCheckedChange={setIsAllDay} />
+              </div>
+
+              <div>
+                <Label>Timezone</Label>
+                <Select value={timezone} onValueChange={setTimezone}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT_TIMEZONES.map((tz) => (
+                      <SelectItem key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-gray-500 mt-1">
+                  Times will be displayed in this timezone
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

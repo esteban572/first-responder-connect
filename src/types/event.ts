@@ -8,6 +8,18 @@ export const EVENT_RESPONSE_OPTIONS: { value: EventResponse; label: string; icon
   { value: 'not_going', label: 'Not Going', icon: 'XCircle' },
 ];
 
+// Common US timezones for event scheduling
+export const EVENT_TIMEZONES = [
+  { value: 'America/New_York', label: 'Eastern Time (ET)', abbr: 'ET' },
+  { value: 'America/Chicago', label: 'Central Time (CT)', abbr: 'CT' },
+  { value: 'America/Denver', label: 'Mountain Time (MT)', abbr: 'MT' },
+  { value: 'America/Phoenix', label: 'Arizona (MST)', abbr: 'MST' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)', abbr: 'PT' },
+  { value: 'America/Anchorage', label: 'Alaska Time (AKT)', abbr: 'AKT' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HST)', abbr: 'HST' },
+  { value: 'UTC', label: 'UTC', abbr: 'UTC' },
+];
+
 // Event interface matching the database schema
 export interface Event {
   id: string;
@@ -17,6 +29,7 @@ export interface Event {
   cover_image_url: string | null;
   start_date: string;
   end_date: string | null;
+  timezone: string;
   is_all_day: boolean;
   is_active: boolean;
   is_featured: boolean;
@@ -47,6 +60,7 @@ export interface EventCreate {
   cover_image_url?: string;
   start_date: string;
   end_date?: string;
+  timezone?: string;
   is_all_day?: boolean;
   is_active?: boolean;
   is_featured?: boolean;
@@ -61,6 +75,7 @@ export interface EventUpdate {
   cover_image_url?: string;
   start_date?: string;
   end_date?: string | null;
+  timezone?: string;
   is_all_day?: boolean;
   is_active?: boolean;
   is_featured?: boolean;

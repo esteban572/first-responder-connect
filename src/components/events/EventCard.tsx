@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Users, Star, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Event, EventWithResponse } from '@/types/event';
+import { Event, EventWithResponse, EVENT_TIMEZONES } from '@/types/event';
 
 interface EventCardProps {
   event: Event | EventWithResponse;
@@ -22,6 +22,10 @@ export function EventCard({ event, showResponse = false }: EventCardProps) {
       hour: 'numeric',
       minute: '2-digit',
     });
+  };
+
+  const getTimezoneAbbr = (tz: string) => {
+    return EVENT_TIMEZONES.find((t) => t.value === tz)?.abbr || '';
   };
 
   const isPastEvent = new Date(event.start_date) < new Date();
@@ -78,7 +82,14 @@ export function EventCard({ event, showResponse = false }: EventCardProps) {
               {!event.is_all_day && (
                 <>
                   <Clock className="h-4 w-4 text-gray-400 ml-2" />
-                  <span>{formatTime(event.start_date)}</span>
+                  <span>
+                    {formatTime(event.start_date)}
+                    {event.timezone && (
+                      <span className="text-gray-400 ml-1">
+                        {getTimezoneAbbr(event.timezone)}
+                      </span>
+                    )}
+                  </span>
                 </>
               )}
               {event.is_all_day && (
