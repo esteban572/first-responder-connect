@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { User, LogOut, Bell, Shield, HelpCircle } from 'lucide-react';
+import { User, LogOut, Bell, Shield, HelpCircle, CreditCard, Building2, Sparkles } from 'lucide-react';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { toast } from 'sonner';
 export default function Settings() {
   const navigate = useNavigate();
   const { user, signOut, isAdmin } = useAuth();
+  const { organization, isSubscribed, subscriptionPlan } = useOrganization();
 
   const handleSignOut = async () => {
     try {
@@ -73,6 +75,71 @@ export default function Settings() {
               <User className="h-4 w-4" />
               View & Edit Profile
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Organization & Billing Section */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Organization & Billing
+            </CardTitle>
+            <CardDescription>
+              {organization ? organization.name : 'Manage your organization and subscription'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {organization ? (
+              <>
+                {/* Subscription Status */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className={`h-5 w-5 ${isSubscribed ? 'text-primary' : 'text-gray-400'}`} />
+                    <div>
+                      <p className="font-medium">
+                        {isSubscribed ? 'ParaNet Pro' : 'Free Plan'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {isSubscribed ? 'All features unlocked' : 'Limited features'}
+                      </p>
+                    </div>
+                  </div>
+                  {!isSubscribed && (
+                    <span className="px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                      Upgrade
+                    </span>
+                  )}
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-3"
+                  onClick={() => navigate('/billing')}
+                >
+                  <CreditCard className="h-4 w-4" />
+                  {isSubscribed ? 'Manage Subscription' : 'Upgrade to Pro - $0.99/mo'}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-3"
+                  onClick={() => navigate('/organization/settings')}
+                >
+                  <Building2 className="h-4 w-4" />
+                  Organization Settings
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-3"
+                onClick={() => navigate('/organization/setup')}
+              >
+                <Building2 className="h-4 w-4" />
+                Create or Join Organization
+              </Button>
+            )}
           </CardContent>
         </Card>
 

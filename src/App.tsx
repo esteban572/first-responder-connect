@@ -46,6 +46,7 @@ import Meetings from "./pages/Meetings";
 import MeetingRoom from "./pages/MeetingRoom";
 import OrganizationSettings from "./pages/OrganizationSettings";
 import OrganizationSetup from "./pages/OrganizationSetup";
+import Billing from "./pages/Billing";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -356,6 +357,23 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <OrganizationSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/billing"
+              element={
+                <ProtectedRoute>
+                  <Billing />
+                </ProtectedRoute>
+              }
+            />
+            {/* Alias for settings/billing */}
+            <Route
+              path="/settings/billing"
+              element={
+                <ProtectedRoute>
+                  <Billing />
                 </ProtectedRoute>
               }
             />
