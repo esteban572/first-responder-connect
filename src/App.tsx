@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import Home from "./pages/Home";
+import AuthCallback from "./pages/AuthCallback";
 import Feed from "./pages/Feed";
 import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
@@ -43,6 +44,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route
               path="/feed"
               element={
