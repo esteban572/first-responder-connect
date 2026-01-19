@@ -129,18 +129,18 @@ export async function deleteOrganization(id: string): Promise<boolean> {
 
 // Check if slug is available
 export async function isSlugAvailable(slug: string): Promise<boolean> {
-  const { data, error } = await supabase
+  const { data, error, count } = await supabase
     .from('organizations')
-    .select('id')
-    .eq('slug', slug)
-    .maybeSingle();
+    .select('id', { count: 'exact', head: true })
+    .eq('slug', slug);
 
   if (error) {
     console.error('Error checking slug:', error);
-    return false;
+    // On error, assume available to not block user - actual uniqueness is enforced by DB
+    return true;
   }
 
-  return !data;
+  return (count || 0) === 0;
 }
 
 // ============================================
