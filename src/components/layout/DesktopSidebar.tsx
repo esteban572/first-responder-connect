@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Briefcase, User, MessageCircle, Bell, Shield, LogOut, Search } from "lucide-react";
+import { Home, Briefcase, User, MessageCircle, Bell, Shield, LogOut, Search, Settings } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +11,7 @@ import { getUnreadCount, subscribeToMessages } from "@/lib/messageService";
 export function DesktopSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   // Load unread count
@@ -130,6 +130,25 @@ export function DesktopSidebar() {
             </Link>
           );
         })}
+
+        {/* Admin Link */}
+        {isAdmin && (
+          <>
+            <div className="my-2 border-t border-white/10" />
+            <Link
+              to="/admin"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                location.pathname.startsWith('/admin')
+                  ? "bg-accent text-white shadow-glow-accent"
+                  : "text-white/70 hover:bg-white/10 hover:text-white"
+              )}
+            >
+              <Settings className="h-5 w-5" />
+              <span className="font-medium">Admin CMS</span>
+            </Link>
+          </>
+        )}
       </nav>
 
       {/* User Section */}
