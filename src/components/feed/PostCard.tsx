@@ -1,11 +1,33 @@
-import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { likePost, hasUserLikedPost, deletePost } from "@/lib/postService";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { CommentsDialog } from "./CommentsDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PostCardProps {
   post: {
     id: string;
+    authorId?: string;
     author: {
       name: string;
       role: string;
@@ -18,15 +40,97 @@ interface PostCardProps {
     comments: number;
     timestamp: string;
   };
+  onLikeUpdate?: () => void;
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, onLikeUpdate }: PostCardProps) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes);
+  const [commentCount, setCommentCount] = useState(post.comments);
+  const [isLiking, setIsLiking] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleLike = () => {
+  const isOwnPost = user?.id === post.authorId;
+
+  useEffect(() => {
+    // Check if user has liked this post
+    const checkLikeStatus = async () => {
+      const hasLiked = await hasUserLikedPost(post.id);
+      setLiked(hasLiked);
+    };
+    checkLikeStatus();
+  }, [post.id]);
+
+  // Sync counts with props when they change
+  useEffect(() => {
+    setLikeCount(post.likes);
+    setCommentCount(post.comments);
+  }, [post.likes, post.comments]);
+
+  const handleAuthorClick = () => {
+    if (post.authorId) {
+      navigate(`/user/${post.authorId}`);
+    }
+  };
+
+  const handleCommentAdded = () => {
+    setCommentCount(prev => prev + 1);
+    onLikeUpdate?.();
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const success = await deletePost(post.id);
+      if (success) {
+        toast.success('Post deleted');
+        onLikeUpdate?.();
+      } else {
+        toast.error('Failed to delete post');
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast.error('Failed to delete post');
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  const handleLike = async () => {
+    if (isLiking) return;
+
+    setIsLiking(true);
+    const previousLiked = liked;
+    const previousCount = likeCount;
+
+    // Optimistic update
     setLiked(!liked);
     setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+
+    try {
+      const success = await likePost(post.id);
+      if (!success) {
+        // Revert on error
+        setLiked(previousLiked);
+        setLikeCount(previousCount);
+        toast.error('Failed to update like');
+      } else {
+        onLikeUpdate?.();
+      }
+    } catch (error) {
+      console.error('Error liking post:', error);
+      // Revert on error
+      setLiked(previousLiked);
+      setLikeCount(previousCount);
+      toast.error('Failed to update like');
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   return (
@@ -35,12 +139,24 @@ export function PostCard({ post }: PostCardProps) {
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
           <img
-            src={post.author.avatar}
+            src={post.author.avatar || '/placeholder.svg'}
             alt={post.author.name}
-            className="w-11 h-11 rounded-full object-cover ring-2 ring-border"
+            className={cn(
+              "w-11 h-11 rounded-full object-cover ring-2 ring-border",
+              post.authorId && "cursor-pointer hover:ring-primary transition-all"
+            )}
+            onClick={handleAuthorClick}
           />
           <div>
-            <h4 className="font-semibold text-sm">{post.author.name}</h4>
+            <h4
+              className={cn(
+                "font-semibold text-sm",
+                post.authorId && "cursor-pointer hover:text-primary transition-colors"
+              )}
+              onClick={handleAuthorClick}
+            >
+              {post.author.name}
+            </h4>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{post.author.role}</span>
               <span>•</span>
@@ -48,9 +164,28 @@ export function PostCard({ post }: PostCardProps) {
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        {isOwnPost ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Post
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {/* Content */}
@@ -90,15 +225,50 @@ export function PostCard({ post }: PostCardProps) {
             <Heart className={cn("h-4 w-4", liked && "fill-current")} />
             <span className="text-sm font-medium">{likeCount}</span>
           </Button>
-          <Button variant="ghost" size="sm" className="gap-2 h-9 px-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 h-9 px-3"
+            onClick={() => setCommentsOpen(true)}
+          >
             <MessageCircle className="h-4 w-4" />
-            <span className="text-sm font-medium">{post.comments}</span>
+            <span className="text-sm font-medium">{commentCount}</span>
           </Button>
         </div>
         <Button variant="ghost" size="sm" className="h-9 px-3">
           <Share2 className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Comments Dialog */}
+      <CommentsDialog
+        open={commentsOpen}
+        onOpenChange={setCommentsOpen}
+        postId={post.id}
+        onCommentAdded={handleCommentAdded}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </article>
   );
 }

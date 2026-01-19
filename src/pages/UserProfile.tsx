@@ -1,66 +1,71 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { PhotoGrid } from '@/components/profile/PhotoGrid';
 import { PostCard } from '@/components/feed/PostCard';
-import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
-import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { getCurrentUserProfile } from '@/lib/userService';
-import { getCurrentUserMedia } from '@/lib/mediaService';
+import { getUserProfile, checkConnection, sendConnectionRequest } from '@/lib/userService';
+import { getUserMedia } from '@/lib/mediaService';
 import { getUserPosts } from '@/lib/postService';
 import { UserProfile } from '@/types/user';
 import { MediaItem } from '@/types/media';
 import { Post } from '@/types/post';
-import { format, formatDistanceToNow } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { MessageCircle, UserPlus, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { format, formatDistanceToNow } from 'date-fns';
 
-const Profile = () => {
-  const { user: authUser } = useAuth();
+const UserProfilePage = () => {
+  const { userId } = useParams<{ userId: string }>();
+  const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'pending' | 'none'>('none');
+  const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
+    if (!userId) {
+      navigate('/search');
+      return;
+    }
+
+    if (userId === currentUser?.id) {
+      navigate('/profile');
+      return;
+    }
+
     loadProfile();
-  }, [authUser]);
+  }, [userId, currentUser]);
 
   const loadProfile = async () => {
-    if (!authUser) return;
+    if (!userId) return;
 
     setLoading(true);
     try {
       const [userProfile, userMedia, userPosts] = await Promise.all([
-        getCurrentUserProfile(),
-        getCurrentUserMedia(),
-        getUserPosts(authUser.id),
+        getUserProfile(userId),
+        getUserMedia(userId),
+        getUserPosts(userId),
       ]);
 
       if (!userProfile) {
-        // Create initial profile from auth user
-        const initialProfile: UserProfile = {
-          id: authUser.id,
-          email: authUser.email || '',
-          full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-          role: '',
-          location: '',
-          bio: '',
-          avatar_url: authUser.user_metadata?.avatar_url || '',
-          cover_image_url: '',
-          credentials: [],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        setProfile(initialProfile);
-      } else {
-        setProfile(userProfile);
+        toast.error('User not found');
+        navigate('/search');
+        return;
       }
-
+      setProfile(userProfile);
       setMedia(userMedia);
       setPosts(userPosts);
+
+      // Check connection status
+      if (currentUser) {
+        const status = await checkConnection(currentUser.id, userId);
+        setConnectionStatus(status);
+      }
     } catch (error) {
       console.error('Error loading profile:', error);
       toast.error('Failed to load profile');
@@ -69,12 +74,29 @@ const Profile = () => {
     }
   };
 
-  const handleProfileUpdated = () => {
-    loadProfile();
+  const handleConnect = async () => {
+    if (!userId || !currentUser) return;
+
+    setIsConnecting(true);
+    try {
+      const success = await sendConnectionRequest(userId);
+      if (success) {
+        setConnectionStatus('pending');
+        toast.success('Connection request sent!');
+      } else {
+        toast.error('Failed to send connection request');
+      }
+    } catch (error) {
+      console.error('Error sending connection request:', error);
+      toast.error('Failed to send connection request');
+    } finally {
+      setIsConnecting(false);
+    }
   };
 
-  const handleMediaUpdated = () => {
-    loadProfile();
+  const handleMessage = () => {
+    // Navigate to messages with this user
+    navigate(`/messages?user=${userId}`);
   };
 
   if (loading) {
@@ -91,18 +113,7 @@ const Profile = () => {
   }
 
   if (!profile) {
-    return (
-      <AppLayout>
-        <div className="max-w-2xl mx-auto py-4 md:py-6">
-          <div className="feed-card p-8 text-center">
-            <p className="text-muted-foreground">No profile found. Please create one.</p>
-            <Button onClick={() => setEditDialogOpen(true)} className="mt-4">
-              Create Profile
-            </Button>
-          </div>
-        </div>
-      </AppLayout>
-    );
+    return null;
   }
 
   // Convert UserProfile to ProfileHeader format
@@ -139,16 +150,41 @@ const Profile = () => {
     <AppLayout>
       <div className="max-w-2xl mx-auto py-4 md:py-6">
         <div className="px-4 md:px-0 space-y-4">
-          <ProfileHeader user={profileHeaderData}>
+          <ProfileHeader
+            user={profileHeaderData}
+          >
             <Button
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => setEditDialogOpen(true)}
+              onClick={handleMessage}
             >
-              <Pencil className="h-4 w-4" />
-              Edit Profile
+              <MessageCircle className="h-4 w-4" />
+              Message
             </Button>
+            {connectionStatus === 'none' && (
+              <Button
+                size="sm"
+                className="bg-accent hover:bg-accent/90 gap-2"
+                onClick={handleConnect}
+                disabled={isConnecting}
+              >
+                <UserPlus className="h-4 w-4" />
+                {isConnecting ? 'Connecting...' : 'Connect'}
+              </Button>
+            )}
+            {connectionStatus === 'pending' && (
+              <Button size="sm" variant="outline" disabled className="gap-2">
+                <Check className="h-4 w-4" />
+                Request Sent
+              </Button>
+            )}
+            {connectionStatus === 'connected' && (
+              <Button size="sm" variant="outline" disabled className="gap-2">
+                <Check className="h-4 w-4" />
+                Connected
+              </Button>
+            )}
           </ProfileHeader>
 
           {profile.bio && (
@@ -160,10 +196,10 @@ const Profile = () => {
 
           <PhotoGrid
             photos={media}
-            onMediaUpdated={handleMediaUpdated}
-            isOwnProfile={true}
+            onMediaUpdated={() => {}}
+            isOwnProfile={false}
           />
-          
+
           {/* User's Posts */}
           <div>
             <h3 className="font-bold text-base mb-4 px-1">Recent Posts</h3>
@@ -185,15 +221,8 @@ const Profile = () => {
           </div>
         </div>
       </div>
-
-      <EditProfileDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        profile={profile}
-        onProfileUpdated={handleProfileUpdated}
-      />
     </AppLayout>
   );
 };
 
-export default Profile;
+export default UserProfilePage;

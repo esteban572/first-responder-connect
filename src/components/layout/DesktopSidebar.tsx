@@ -1,10 +1,15 @@
-import { Home, Briefcase, User, MessageCircle, Bell, Shield, LogOut } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Home, Briefcase, User, MessageCircle, Bell, Shield, LogOut, Search } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const navItems = [
-  { icon: Home, label: "Feed", path: "/" },
+  { icon: Home, label: "Feed", path: "/feed" },
   { icon: Briefcase, label: "Job Board", path: "/jobs" },
+  { icon: Search, label: "Search Users", path: "/search" },
   { icon: MessageCircle, label: "Messages", path: "/messages" },
   { icon: Bell, label: "Alerts", path: "/alerts" },
   { icon: User, label: "My Profile", path: "/profile" },
@@ -12,12 +17,40 @@ const navItems = [
 
 export function DesktopSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success('Signed out successfully');
+      navigate('/');
+    } catch (error) {
+      toast.error('Failed to sign out');
+      console.error('Sign out error:', error);
+    }
+  };
+
+  const getUserInitials = () => {
+    if (!user) return 'GU';
+    const name = user.user_metadata?.full_name || user.email || '';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const getUserName = () => {
+    if (!user) return 'Guest User';
+    return user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+  };
 
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-gradient-hero text-white">
       {/* Logo */}
       <div className="p-6 border-b border-white/10">
-        <Link to="/" className="flex items-center gap-3">
+        <Link to="/feed" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
             <Shield className="h-6 w-6 text-white" />
           </div>
@@ -51,16 +84,32 @@ export function DesktopSidebar() {
       </nav>
 
       {/* User Section */}
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-white/10 space-y-2">
         <div className="flex items-center gap-3 px-4 py-3">
-          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-            <User className="h-5 w-5 text-white" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium">Guest User</p>
-            <p className="text-xs text-white/60">Sign in to continue</p>
+          <Avatar className="w-10 h-10 border-2 border-white/20">
+            <AvatarImage src={user?.user_metadata?.avatar_url} />
+            <AvatarFallback className="bg-white/20 text-white text-sm">
+              {getUserInitials()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{getUserName()}</p>
+            <p className="text-xs text-white/60 truncate">
+              {user?.email || 'Sign in to continue'}
+            </p>
           </div>
         </div>
+        {user && (
+          <Button
+            onClick={handleSignOut}
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-white/70 hover:text-white hover:bg-white/10"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
+        )}
       </div>
     </aside>
   );

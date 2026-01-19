@@ -1,5 +1,5 @@
-import { MapPin, Award, Calendar, MessageCircle, UserPlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MapPin, Award, Calendar } from "lucide-react";
+import { ReactNode } from "react";
 
 interface ProfileHeaderProps {
   user: {
@@ -13,9 +13,10 @@ interface ProfileHeaderProps {
     postsCount: number;
     connectionsCount: number;
   };
+  children?: ReactNode;
 }
 
-export function ProfileHeader({ user }: ProfileHeaderProps) {
+export function ProfileHeader({ user, children }: ProfileHeaderProps) {
   return (
     <div className="feed-card overflow-hidden animate-fade-in">
       {/* Cover Image */}
@@ -39,16 +40,11 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 pt-2 mb-8">
-          <Button variant="outline" size="sm" className="gap-2">
-            <MessageCircle className="h-4 w-4" />
-            Message
-          </Button>
-          <Button size="sm" className="bg-accent hover:bg-accent/90 gap-2">
-            <UserPlus className="h-4 w-4" />
-            Connect
-          </Button>
-        </div>
+        {children && (
+          <div className="flex justify-end gap-2 pt-2 mb-8">
+            {children}
+          </div>
+        )}
 
         {/* Info */}
         <div>
