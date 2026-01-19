@@ -7,13 +7,21 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Send, Reply, Trash2 } from 'lucide-react';
+import { Send, Reply, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { Comment } from '@/types/post';
-import { getPostComments, createComment, deleteComment } from '@/lib/commentService';
+import {
+  getPostComments,
+  createComment,
+  deleteComment,
+  reactToComment,
+  createMentionNotifications,
+} from '@/lib/commentService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { MentionInput, renderCommentWithMentions } from './MentionInput';
+import { ReactionsPopover } from './ReactionsPopover';
 
 interface CommentsDialogProps {
   open: boolean;
@@ -52,7 +60,7 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
   };
 
   const handleSubmitComment = async () => {
-    if (!newComment.trim() || submitting) return;
+    if (!newComment.trim() || submitting || !user) return;
 
     setSubmitting(true);
     try {
@@ -60,10 +68,14 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
         post_id: postId,
         content: newComment.trim(),
       });
+
+      // Create notifications for mentions
+      const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Someone';
+      await createMentionNotifications(newComment.trim(), user.id, userName, postId);
+
       setNewComment('');
       onCommentAdded?.();
       toast.success('Comment added');
-      // Reload comments to get fresh data
       await loadComments();
     } catch (error) {
       console.error('Error creating comment:', error);
@@ -74,7 +86,7 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
   };
 
   const handleSubmitReply = async (parentId: string) => {
-    if (!replyContent.trim() || submitting) return;
+    if (!replyContent.trim() || submitting || !user) return;
 
     setSubmitting(true);
     try {
@@ -83,11 +95,15 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
         content: replyContent.trim(),
         parent_id: parentId,
       });
+
+      // Create notifications for mentions
+      const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Someone';
+      await createMentionNotifications(replyContent.trim(), user.id, userName, postId);
+
       setReplyContent('');
       setReplyingTo(null);
       onCommentAdded?.();
       toast.success('Reply added');
-      // Reload comments to get fresh data
       await loadComments();
     } catch (error) {
       console.error('Error creating reply:', error);
@@ -102,7 +118,6 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
       const success = await deleteComment(commentId, postId);
       if (success) {
         if (isReply && parentId) {
-          // Remove reply from parent
           setComments(comments.map(comment => {
             if (comment.id === parentId) {
               return {
@@ -113,7 +128,6 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
             return comment;
           }));
         } else {
-          // Remove top-level comment
           setComments(comments.filter(c => c.id !== commentId));
         }
         onCommentAdded?.();
@@ -122,6 +136,37 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
     } catch (error) {
       console.error('Error deleting comment:', error);
       toast.error('Failed to delete comment');
+    }
+  };
+
+  const handleReaction = async (commentId: string, type: 'like' | 'dislike', isReply: boolean, parentId?: string) => {
+    try {
+      const result = await reactToComment(commentId, type);
+      if (result.success) {
+        // Update the comment in state
+        const updateComment = (comment: Comment): Comment => {
+          if (comment.id === commentId) {
+            return {
+              ...comment,
+              likes_count: result.newLikesCount,
+              dislikes_count: result.newDislikesCount,
+              userReaction: result.userReaction,
+            };
+          }
+          if (comment.replies) {
+            return {
+              ...comment,
+              replies: comment.replies.map(updateComment),
+            };
+          }
+          return comment;
+        };
+
+        setComments(comments.map(updateComment));
+      }
+    } catch (error) {
+      console.error('Error reacting to comment:', error);
+      toast.error('Failed to react');
     }
   };
 
@@ -135,12 +180,12 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
       <img
         src={comment.author?.avatar_url || '/placeholder.svg'}
         alt={comment.author?.full_name || 'User'}
-        className="w-8 h-8 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+        className="w-8 h-8 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-primary transition-all flex-shrink-0"
         onClick={() => comment.author?.id && handleUserClick(comment.author.id)}
       />
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="bg-muted rounded-lg px-3 py-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span
               className="font-semibold text-sm cursor-pointer hover:text-primary transition-colors"
               onClick={() => comment.author?.id && handleUserClick(comment.author.id)}
@@ -151,12 +196,62 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
               <span className="text-xs text-muted-foreground">{comment.author.role}</span>
             )}
           </div>
-          <p className="text-sm mt-1">{comment.content}</p>
+          <p className="text-sm mt-1 break-words">
+            {renderCommentWithMentions(comment.content, handleUserClick)}
+          </p>
         </div>
-        <div className="flex items-center gap-3 mt-1 ml-1">
+
+        {/* Actions row */}
+        <div className="flex items-center gap-3 mt-1 ml-1 flex-wrap">
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
           </span>
+
+          {/* Like button */}
+          <button
+            className={cn(
+              'text-xs flex items-center gap-1 transition-colors',
+              comment.userReaction === 'like'
+                ? 'text-primary font-medium'
+                : 'text-muted-foreground hover:text-primary'
+            )}
+            onClick={() => handleReaction(comment.id, 'like', isReply, parentId)}
+          >
+            <ThumbsUp className={cn('h-3 w-3', comment.userReaction === 'like' && 'fill-current')} />
+            {comment.likes_count > 0 && (
+              <ReactionsPopover
+                commentId={comment.id}
+                likesCount={comment.likes_count}
+                dislikesCount={comment.dislikes_count}
+              >
+                <span className="hover:underline cursor-pointer">{comment.likes_count}</span>
+              </ReactionsPopover>
+            )}
+          </button>
+
+          {/* Dislike button */}
+          <button
+            className={cn(
+              'text-xs flex items-center gap-1 transition-colors',
+              comment.userReaction === 'dislike'
+                ? 'text-destructive font-medium'
+                : 'text-muted-foreground hover:text-destructive'
+            )}
+            onClick={() => handleReaction(comment.id, 'dislike', isReply, parentId)}
+          >
+            <ThumbsDown className={cn('h-3 w-3', comment.userReaction === 'dislike' && 'fill-current')} />
+            {comment.dislikes_count > 0 && (
+              <ReactionsPopover
+                commentId={comment.id}
+                likesCount={comment.likes_count}
+                dislikesCount={comment.dislikes_count}
+              >
+                <span className="hover:underline cursor-pointer">{comment.dislikes_count}</span>
+              </ReactionsPopover>
+            )}
+          </button>
+
+          {/* Reply button */}
           {!isReply && (
             <button
               className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
@@ -166,6 +261,8 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
               Reply
             </button>
           )}
+
+          {/* Delete button */}
           {user?.id === comment.user_id && (
             <button
               className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1"
@@ -180,11 +277,11 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
         {/* Reply input */}
         {replyingTo === comment.id && (
           <div className="flex gap-2 mt-2">
-            <Textarea
-              placeholder="Write a reply..."
+            <MentionInput
               value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
-              className="min-h-[60px] text-sm resize-none"
+              onChange={setReplyContent}
+              placeholder="Write a reply... (use @ to mention)"
+              className="text-sm flex-1"
             />
             <Button
               size="sm"
@@ -232,11 +329,11 @@ export function CommentsDialog({ open, onOpenChange, postId, onCommentAdded }: C
 
         {/* New comment input */}
         <div className="flex gap-2 pt-4 border-t">
-          <Textarea
-            placeholder="Write a comment..."
+          <MentionInput
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            className="min-h-[60px] resize-none"
+            onChange={setNewComment}
+            placeholder="Write a comment... (use @ to mention)"
+            className="flex-1"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();

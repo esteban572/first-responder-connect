@@ -35,6 +35,8 @@ export interface Comment {
   user_id: string;
   parent_id?: string;
   content: string;
+  likes_count: number;
+  dislikes_count: number;
   created_at: string;
   updated_at: string;
   author?: {
@@ -44,10 +46,24 @@ export interface Comment {
     avatar_url?: string;
   };
   replies?: Comment[];
+  userReaction?: 'like' | 'dislike' | null;
 }
 
 export interface CommentCreate {
   post_id: string;
   content: string;
   parent_id?: string;
+}
+
+export interface CommentReaction {
+  id: string;
+  comment_id: string;
+  user_id: string;
+  type: 'like' | 'dislike';
+  created_at: string;
+  user?: {
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+  };
 }
