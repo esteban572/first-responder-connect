@@ -471,8 +471,26 @@ export async function canCreateMeeting(orgId: string): Promise<{
     return { allowed: false, reason: 'Organization not found' };
   }
 
+  // TODO: Uncomment for production to require paid subscription
+  // if (org.subscription_plan === 'free') {
+  //   return { allowed: false, reason: 'Video meetings require a paid subscription' };
+  // }
+
+  // Free plan limited to 3 meetings per month
   if (org.subscription_plan === 'free') {
-    return { allowed: false, reason: 'Video meetings require a paid subscription' };
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const { count } = await supabase
+      .from('video_meetings')
+      .select('*', { count: 'exact', head: true })
+      .eq('organization_id', orgId)
+      .gte('created_at', startOfMonth.toISOString());
+
+    if ((count || 0) >= 3) {
+      return { allowed: false, reason: 'Monthly meeting limit reached (3 meetings on free plan)' };
+    }
   }
 
   if (org.subscription_status !== 'active' && org.subscription_status !== 'trialing') {

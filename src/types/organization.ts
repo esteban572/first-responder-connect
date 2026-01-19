@@ -167,8 +167,8 @@ export const PLAN_FEATURES: Record<SubscriptionPlan, {
 }> = {
   free: {
     maxMembers: 5,
-    videoMeetingsPerMonth: 0,
-    features: ['basic_messaging', 'job_board', 'credentials'],
+    videoMeetingsPerMonth: 3, // Limited free meetings for testing
+    features: ['basic_messaging', 'job_board', 'credentials', 'video_meetings'], // TODO: Remove video_meetings for production
   },
   starter: {
     maxMembers: 15,
