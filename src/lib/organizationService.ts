@@ -18,22 +18,32 @@ import {
 
 export async function createOrganization(data: OrganizationCreate): Promise<Organization | null> {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  if (!user) {
+    console.error('No authenticated user');
+    return null;
+  }
+
+  console.log('Creating organization with:', { ...data, owner_id: user.id });
 
   const { data: org, error } = await supabase
     .from('organizations')
     .insert({
-      ...data,
+      name: data.name,
+      slug: data.slug,
+      logo_url: data.logo_url || null,
+      primary_color: data.primary_color || '#f97316',
+      secondary_color: data.secondary_color || '#1e3a5f',
       owner_id: user.id,
     })
     .select()
     .single();
 
   if (error) {
-    console.error('Error creating organization:', error);
+    console.error('Error creating organization:', error.message, error.details, error.hint);
     return null;
   }
 
+  console.log('Organization created:', org);
   return org;
 }
 
