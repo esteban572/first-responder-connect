@@ -3,12 +3,13 @@ import { supabase } from './supabase';
 export interface Notification {
   id: string;
   user_id: string;
-  type: 'like' | 'comment' | 'connection' | 'message' | 'job';
+  type: 'like' | 'comment' | 'connection' | 'message' | 'job' | 'credential_expiring' | 'credential_expired';
   title: string;
   description?: string;
   read: boolean;
   related_user_id?: string;
   related_post_id?: string;
+  related_credential_id?: string;
   created_at: string;
   related_user?: {
     id: string;

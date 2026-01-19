@@ -1,22 +1,30 @@
 import { useState, useEffect } from "react";
-import { Home, Briefcase, User, MessageCircle, Bell, Shield, Search, Settings, Newspaper, CalendarDays } from "lucide-react";
+import { Home, Briefcase, User, MessageCircle, Bell, Shield, Search, Settings, Newspaper, CalendarDays, Award } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getUnreadCount, subscribeToMessages } from "@/lib/messageService";
+import { getExpiringCredentialsCount } from "@/lib/credentialService";
 
 export function DesktopSidebar() {
   const location = useLocation();
   const { user, isAdmin } = useAuth();
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [expiringCredentials, setExpiringCredentials] = useState(0);
 
-  // Load unread count
+  // Load unread count and expiring credentials
   useEffect(() => {
     if (user) {
       loadUnreadCount();
+      loadExpiringCredentials();
     }
   }, [user]);
+
+  const loadExpiringCredentials = async () => {
+    const count = await getExpiringCredentialsCount();
+    setExpiringCredentials(count);
+  };
 
   // Subscribe to new messages
   useEffect(() => {
@@ -48,6 +56,7 @@ export function DesktopSidebar() {
     { icon: Briefcase, label: "Job Board", path: "/jobs", badge: 0 },
     { icon: CalendarDays, label: "Events", path: "/events", badge: 0 },
     { icon: Newspaper, label: "Blog", path: "/blog", badge: 0 },
+    { icon: Award, label: "Credentials", path: "/credentials", badge: expiringCredentials },
     { icon: Search, label: "Search Users", path: "/search", badge: 0 },
     { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadMessages },
     { icon: Bell, label: "Alerts", path: "/alerts", badge: 0 },

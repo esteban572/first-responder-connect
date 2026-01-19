@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { checkExpiringCredentialsAndNotify } from '@/lib/credentialService';
 
 interface AuthContextType {
   user: User | null;
@@ -78,6 +79,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user]);
+
+  // Check for expiring credentials on login and visibility change
+  useEffect(() => {
+    if (!user) return;
+
+    // Check immediately when user logs in
+    checkExpiringCredentialsAndNotify();
+
+    // Also check when user returns to the app
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkExpiringCredentialsAndNotify();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [user]);

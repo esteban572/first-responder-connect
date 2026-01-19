@@ -35,6 +35,8 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import SavedArticles from "./pages/SavedArticles";
 import Settings from "./pages/Settings";
+import Credentials from "./pages/Credentials";
+import CredentialShowcase from "./pages/CredentialShowcase";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -235,6 +237,25 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            {/* Credential Routes */}
+            <Route
+              path="/credentials"
+              element={
+                <ProtectedRoute>
+                  <Credentials />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/credentials/showcase"
+              element={
+                <ProtectedRoute>
+                  <CredentialShowcase />
+                </ProtectedRoute>
+              }
+            />
+            {/* Public credential showcase (no auth required) */}
+            <Route path="/user/:userId/credentials" element={<CredentialShowcase />} />
             {/* Blog Routes */}
             <Route
               path="/blog"

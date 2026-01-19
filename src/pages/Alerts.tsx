@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Bell, Heart, MessageCircle, Briefcase, UserPlus, X, Trash2, Check, UserCheck, UserX } from "lucide-react";
+import { Bell, Heart, MessageCircle, Briefcase, UserPlus, X, Trash2, Check, UserCheck, UserX, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,20 +41,24 @@ interface PendingRequest {
   user: UserProfile;
 }
 
-const typeStyles = {
+const typeStyles: Record<string, string> = {
   job: "bg-accent/10 text-accent",
   like: "bg-destructive/10 text-destructive",
   comment: "bg-primary/10 text-primary",
   connection: "bg-green-500/10 text-green-500",
   message: "bg-blue-500/10 text-blue-500",
+  credential_expiring: "bg-amber-500/10 text-amber-500",
+  credential_expired: "bg-red-500/10 text-red-500",
 };
 
-const typeIcons = {
+const typeIcons: Record<string, typeof Bell> = {
   job: Briefcase,
   like: Heart,
   comment: MessageCircle,
   connection: UserPlus,
   message: MessageCircle,
+  credential_expiring: Award,
+  credential_expired: Award,
 };
 
 const Alerts = () => {
@@ -216,6 +220,8 @@ const Alerts = () => {
       navigate(`/user/${notification.related_user_id}`);
     } else if (notification.type === "message" && notification.related_user_id) {
       navigate(`/messages?user=${notification.related_user_id}`);
+    } else if (notification.type === "credential_expiring" || notification.type === "credential_expired") {
+      navigate("/credentials");
     }
   };
 
