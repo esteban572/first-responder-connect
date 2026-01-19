@@ -3,10 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { PhotoGrid } from '@/components/profile/PhotoGrid';
+import { ActivitySection } from '@/components/profile/ActivitySection';
 import { PostCard } from '@/components/feed/PostCard';
-import { getUserProfile, checkConnection, sendConnectionRequest } from '@/lib/userService';
+import { getUserProfile, checkConnection, sendConnectionRequest, getConnectionsCount } from '@/lib/userService';
 import { getUserMedia } from '@/lib/mediaService';
 import { getUserPosts } from '@/lib/postService';
+import { getUserActivities, Activity } from '@/lib/activityService';
 import { UserProfile } from '@/types/user';
 import { MediaItem } from '@/types/media';
 import { Post } from '@/types/post';
@@ -23,6 +25,8 @@ const UserProfilePage = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [connectionsCount, setConnectionsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'pending' | 'none'>('none');
   const [isConnecting, setIsConnecting] = useState(false);
@@ -46,10 +50,12 @@ const UserProfilePage = () => {
 
     setLoading(true);
     try {
-      const [userProfile, userMedia, userPosts] = await Promise.all([
+      const [userProfile, userMedia, userPosts, userActivities, connCount] = await Promise.all([
         getUserProfile(userId),
         getUserMedia(userId),
         getUserPosts(userId),
+        getUserActivities(userId),
+        getConnectionsCount(userId),
       ]);
 
       if (!userProfile) {
@@ -60,6 +66,8 @@ const UserProfilePage = () => {
       setProfile(userProfile);
       setMedia(userMedia);
       setPosts(userPosts);
+      setActivities(userActivities);
+      setConnectionsCount(connCount);
 
       // Check connection status
       if (currentUser) {
@@ -126,7 +134,7 @@ const UserProfilePage = () => {
     credentials: profile.credentials || [],
     joinDate: format(new Date(profile.created_at), 'MMMM yyyy'),
     postsCount: posts.length,
-    connectionsCount: 0, // TODO: Get from connections
+    connectionsCount: connectionsCount,
   };
 
   // Convert Post to PostCard format
@@ -199,6 +207,9 @@ const UserProfilePage = () => {
             onMediaUpdated={() => {}}
             isOwnProfile={false}
           />
+
+          {/* Activity Section */}
+          <ActivitySection activities={activities} />
 
           {/* User's Posts */}
           <div>

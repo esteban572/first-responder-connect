@@ -1,15 +1,26 @@
 import { supabase } from './supabase';
 import { Post, PostCreate } from '@/types/post';
 import { uploadMedia } from './mediaService';
+import { getConnectedUserIds } from './userService';
 
 /**
- * Get all posts (feed)
+ * Get feed posts (own posts + posts from connections)
  */
 export async function getFeedPosts(): Promise<Post[]> {
-  // First get all posts
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  // Get connected user IDs
+  const connectedIds = await getConnectedUserIds();
+
+  // Include current user's posts + connected users' posts
+  const allowedUserIds = [user.id, ...connectedIds];
+
+  // Get posts from allowed users
   const { data: postsData, error: postsError } = await supabase
     .from('posts')
     .select('*')
+    .in('user_id', allowedUserIds)
     .order('created_at', { ascending: false })
     .limit(50);
 

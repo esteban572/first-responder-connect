@@ -166,6 +166,167 @@ export async function checkConnection(userId1: string, userId2: string): Promise
     .single();
 
   if (error || !data) return 'none';
-  
+
   return data.status === 'accepted' ? 'connected' : 'pending';
+}
+
+/**
+ * Get pending connection requests for the current user
+ */
+export async function getPendingConnectionRequests(): Promise<{
+  id: string;
+  user_id: string;
+  created_at: string;
+  user: UserProfile;
+}[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  // Get requests where someone wants to connect with current user
+  const { data, error } = await supabase
+    .from('connections')
+    .select('id, user_id, created_at')
+    .eq('connected_user_id', user.id)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+
+  if (error || !data) {
+    console.error('Error fetching pending requests:', error);
+    return [];
+  }
+
+  // Fetch profiles for requesters
+  const requesterIds = data.map(r => r.user_id);
+  if (requesterIds.length === 0) return [];
+
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('id', requesterIds);
+
+  const profilesMap = new Map(
+    (profiles || []).map(p => [p.id, p])
+  );
+
+  return data.map(request => ({
+    ...request,
+    user: profilesMap.get(request.user_id) as UserProfile,
+  })).filter(r => r.user);
+}
+
+/**
+ * Accept a connection request and create activities for both users
+ */
+export async function acceptConnection(connectionId: string, requesterId: string): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  // Update the connection status
+  const { error: updateError } = await supabase
+    .from('connections')
+    .update({ status: 'accepted' })
+    .eq('id', connectionId);
+
+  if (updateError) {
+    console.error('Error accepting connection:', updateError);
+    return false;
+  }
+
+  // Get both user profiles for the activity description
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, full_name')
+    .in('id', [user.id, requesterId]);
+
+  const currentUserProfile = profiles?.find(p => p.id === user.id);
+  const requesterProfile = profiles?.find(p => p.id === requesterId);
+
+  // Create activity for the accepting user (current user)
+  await supabase.from('activities').insert({
+    user_id: user.id,
+    type: 'connection',
+    description: `Connected with ${requesterProfile?.full_name || 'a user'}`,
+    related_user_id: requesterId,
+  });
+
+  // Create activity for the requester
+  await supabase.from('activities').insert({
+    user_id: requesterId,
+    type: 'connection',
+    description: `Connected with ${currentUserProfile?.full_name || 'a user'}`,
+    related_user_id: user.id,
+  });
+
+  // Create notification for the requester that their request was accepted
+  await supabase.from('notifications').insert({
+    user_id: requesterId,
+    type: 'connection',
+    title: `${currentUserProfile?.full_name || 'Someone'} accepted your connection request`,
+    description: 'You are now connected',
+    related_user_id: user.id,
+  });
+
+  return true;
+}
+
+/**
+ * Decline a connection request
+ */
+export async function declineConnection(connectionId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('connections')
+    .delete()
+    .eq('id', connectionId);
+
+  if (error) {
+    console.error('Error declining connection:', error);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Get connected user IDs for the current user
+ */
+export async function getConnectedUserIds(): Promise<string[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  // Get connections where current user is either the requester or the receiver
+  const { data, error } = await supabase
+    .from('connections')
+    .select('user_id, connected_user_id')
+    .eq('status', 'accepted')
+    .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`);
+
+  if (error || !data) {
+    console.error('Error fetching connected users:', error);
+    return [];
+  }
+
+  // Extract the other user's ID from each connection
+  const connectedIds = data.map(conn =>
+    conn.user_id === user.id ? conn.connected_user_id : conn.user_id
+  );
+
+  return connectedIds;
+}
+
+/**
+ * Get connections count for a user
+ */
+export async function getConnectionsCount(userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('connections')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'accepted')
+    .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`);
+
+  if (error) {
+    console.error('Error getting connections count:', error);
+    return 0;
+  }
+
+  return count || 0;
 }

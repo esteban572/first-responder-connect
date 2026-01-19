@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { PhotoGrid } from '@/components/profile/PhotoGrid';
+import { ActivitySection } from '@/components/profile/ActivitySection';
 import { PostCard } from '@/components/feed/PostCard';
 import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getCurrentUserProfile } from '@/lib/userService';
+import { getCurrentUserProfile, getConnectionsCount } from '@/lib/userService';
 import { getCurrentUserMedia } from '@/lib/mediaService';
 import { getUserPosts } from '@/lib/postService';
+import { getUserActivities, Activity } from '@/lib/activityService';
 import { UserProfile } from '@/types/user';
 import { MediaItem } from '@/types/media';
 import { Post } from '@/types/post';
@@ -21,6 +23,8 @@ const Profile = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [connectionsCount, setConnectionsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
@@ -33,11 +37,16 @@ const Profile = () => {
 
     setLoading(true);
     try {
-      const [userProfile, userMedia, userPosts] = await Promise.all([
+      const [userProfile, userMedia, userPosts, userActivities, connCount] = await Promise.all([
         getCurrentUserProfile(),
         getCurrentUserMedia(),
         getUserPosts(authUser.id),
+        getUserActivities(authUser.id),
+        getConnectionsCount(authUser.id),
       ]);
+
+      setActivities(userActivities);
+      setConnectionsCount(connCount);
 
       if (!userProfile) {
         // Create initial profile from auth user
@@ -115,7 +124,7 @@ const Profile = () => {
     credentials: profile.credentials || [],
     joinDate: format(new Date(profile.created_at), 'MMMM yyyy'),
     postsCount: posts.length,
-    connectionsCount: 0, // TODO: Get from connections
+    connectionsCount: connectionsCount,
   };
 
   // Convert Post to PostCard format
@@ -163,7 +172,10 @@ const Profile = () => {
             onMediaUpdated={handleMediaUpdated}
             isOwnProfile={true}
           />
-          
+
+          {/* Activity Section */}
+          <ActivitySection activities={activities} />
+
           {/* User's Posts */}
           <div>
             <h3 className="font-bold text-base mb-4 px-1">Recent Posts</h3>

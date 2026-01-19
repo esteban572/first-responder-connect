@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Bell, Heart, MessageCircle, Briefcase, UserPlus, X, Trash2, Check } from "lucide-react";
+import { Bell, Heart, MessageCircle, Briefcase, UserPlus, X, Trash2, Check, UserCheck, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +14,13 @@ import {
   Notification,
   subscribeToNotifications,
 } from "@/lib/notificationService";
+import {
+  getPendingConnectionRequests,
+  acceptConnection,
+  declineConnection,
+} from "@/lib/userService";
+import { UserProfile } from "@/types/user";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -26,6 +33,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
+interface PendingRequest {
+  id: string;
+  user_id: string;
+  created_at: string;
+  user: UserProfile;
+}
 
 const typeStyles = {
   job: "bg-accent/10 text-accent",
@@ -47,11 +61,13 @@ const Alerts = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [processingRequest, setProcessingRequest] = useState<string | null>(null);
 
   useEffect(() => {
-    loadNotifications();
+    loadData();
   }, []);
 
   // Subscribe to new notifications
@@ -66,6 +82,59 @@ const Alerts = () => {
       unsubscribe();
     };
   }, [user]);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [notificationsData, requestsData] = await Promise.all([
+        getNotifications(),
+        getPendingConnectionRequests(),
+      ]);
+      setNotifications(notificationsData);
+      setPendingRequests(requestsData);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast.error("Failed to load notifications");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAcceptRequest = async (request: PendingRequest) => {
+    setProcessingRequest(request.id);
+    try {
+      const success = await acceptConnection(request.id, request.user_id);
+      if (success) {
+        setPendingRequests((prev) => prev.filter((r) => r.id !== request.id));
+        toast.success(`Connected with ${request.user.full_name}!`);
+      } else {
+        toast.error("Failed to accept connection");
+      }
+    } catch (error) {
+      console.error("Error accepting connection:", error);
+      toast.error("Failed to accept connection");
+    } finally {
+      setProcessingRequest(null);
+    }
+  };
+
+  const handleDeclineRequest = async (request: PendingRequest) => {
+    setProcessingRequest(request.id);
+    try {
+      const success = await declineConnection(request.id);
+      if (success) {
+        setPendingRequests((prev) => prev.filter((r) => r.id !== request.id));
+        toast.success("Connection request declined");
+      } else {
+        toast.error("Failed to decline connection");
+      }
+    } catch (error) {
+      console.error("Error declining connection:", error);
+      toast.error("Failed to decline connection");
+    } finally {
+      setProcessingRequest(null);
+    }
+  };
 
   const loadNotifications = async () => {
     setLoading(true);
@@ -189,6 +258,60 @@ const Alerts = () => {
           </div>
         </div>
 
+        {/* Pending Connection Requests */}
+        {!loading && pendingRequests.length > 0 && (
+          <div className="px-4 md:px-0 mb-4">
+            <h2 className="text-lg font-semibold mb-3">Connection Requests</h2>
+            <div className="feed-card divide-y divide-border">
+              {pendingRequests.map((request) => (
+                <div key={request.id} className="flex items-center gap-3 p-4">
+                  <Link to={`/user/${request.user.id}`}>
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={request.user.avatar_url} />
+                      <AvatarFallback>
+                        {request.user.full_name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      to={`/user/${request.user.id}`}
+                      className="font-semibold text-sm hover:underline"
+                    >
+                      {request.user.full_name}
+                    </Link>
+                    <p className="text-xs text-muted-foreground">{request.user.role}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="bg-accent hover:bg-accent/90 gap-1"
+                      onClick={() => handleAcceptRequest(request)}
+                      disabled={processingRequest === request.id}
+                    >
+                      <UserCheck className="h-4 w-4" />
+                      Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1"
+                      onClick={() => handleDeclineRequest(request)}
+                      disabled={processingRequest === request.id}
+                    >
+                      <UserX className="h-4 w-4" />
+                      Decline
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Alerts List */}
         <div className="px-4 md:px-0">
           {loading ? (
@@ -256,7 +379,7 @@ const Alerts = () => {
                 );
               })}
             </div>
-          ) : (
+          ) : pendingRequests.length === 0 ? (
             <div className="feed-card p-12 text-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <Bell className="h-8 w-8 text-muted-foreground" />
@@ -266,7 +389,7 @@ const Alerts = () => {
                 You'll see activity from your network here
               </p>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
