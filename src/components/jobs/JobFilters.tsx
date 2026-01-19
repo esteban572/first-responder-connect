@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { JobCategory } from "./JobCard";
+import { JobCategory } from "@/types/job";
 
 interface JobFiltersProps {
   activeFilter: JobCategory | "all";

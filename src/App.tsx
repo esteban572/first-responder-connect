@@ -19,6 +19,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AnnouncementManagement from "./pages/admin/AnnouncementManagement";
 import AnnouncementEditor from "./pages/admin/AnnouncementEditor";
 import PostManagement from "./pages/admin/PostManagement";
+import JobManagement from "./pages/admin/JobManagement";
+import JobEditor from "./pages/admin/JobEditor";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -118,6 +120,22 @@ const App = () => (
               element={
                 <AdminRoute>
                   <PostManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/jobs"
+              element={
+                <AdminRoute>
+                  <JobManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/jobs/:id"
+              element={
+                <AdminRoute>
+                  <JobEditor />
                 </AdminRoute>
               }
             />

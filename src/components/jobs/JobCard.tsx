@@ -1,8 +1,7 @@
 import { MapPin, DollarSign, Clock, Building2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-export type JobCategory = "travel" | "w2" | "1099" | "contract" | "temp" | "staffing" | "crisis";
+import { JobCategory } from "@/types/job";
 
 interface JobCardProps {
   job: {
@@ -17,6 +16,8 @@ interface JobCardProps {
     urgent?: boolean;
   };
 }
+
+export type { JobCategory };
 
 const categoryStyles: Record<JobCategory, string> = {
   travel: "job-badge-travel",
