@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { PhotoGrid } from '@/components/profile/PhotoGrid';
 import { ActivitySection } from '@/components/profile/ActivitySection';
+import { ExperienceSection } from '@/components/profile/ExperienceSection';
 import { PostCard } from '@/components/feed/PostCard';
 import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
 import { Button } from '@/components/ui/button';
@@ -12,9 +13,11 @@ import { getCurrentUserProfile, getConnectionsCount } from '@/lib/userService';
 import { getCurrentUserMedia } from '@/lib/mediaService';
 import { getUserPosts } from '@/lib/postService';
 import { getUserActivities, Activity } from '@/lib/activityService';
+import { getMyExperiences } from '@/lib/experienceService';
 import { UserProfile } from '@/types/user';
 import { MediaItem } from '@/types/media';
 import { Post } from '@/types/post';
+import { Experience } from '@/types/experience';
 import { format, formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -24,6 +27,7 @@ const Profile = () => {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
   const [connectionsCount, setConnectionsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -37,15 +41,17 @@ const Profile = () => {
 
     setLoading(true);
     try {
-      const [userProfile, userMedia, userPosts, userActivities, connCount] = await Promise.all([
+      const [userProfile, userMedia, userPosts, userActivities, userExperiences, connCount] = await Promise.all([
         getCurrentUserProfile(),
         getCurrentUserMedia(),
         getUserPosts(authUser.id),
         getUserActivities(authUser.id),
+        getMyExperiences(),
         getConnectionsCount(authUser.id),
       ]);
 
       setActivities(userActivities);
+      setExperiences(userExperiences);
       setConnectionsCount(connCount);
 
       if (!userProfile) {
@@ -166,6 +172,13 @@ const Profile = () => {
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{profile.bio}</p>
             </div>
           )}
+
+          {/* Experience Section */}
+          <ExperienceSection
+            experiences={experiences}
+            isOwnProfile={true}
+            onExperienceUpdated={loadProfile}
+          />
 
           <PhotoGrid
             photos={media}

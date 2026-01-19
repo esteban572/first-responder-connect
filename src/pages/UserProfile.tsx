@@ -4,14 +4,17 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { PhotoGrid } from '@/components/profile/PhotoGrid';
 import { ActivitySection } from '@/components/profile/ActivitySection';
+import { ExperienceSection } from '@/components/profile/ExperienceSection';
 import { PostCard } from '@/components/feed/PostCard';
 import { getUserProfile, checkConnection, sendConnectionRequest, getConnectionsCount } from '@/lib/userService';
 import { getUserMedia } from '@/lib/mediaService';
 import { getUserPosts } from '@/lib/postService';
 import { getUserActivities, Activity } from '@/lib/activityService';
+import { getUserPublicExperiences } from '@/lib/experienceService';
 import { UserProfile } from '@/types/user';
 import { MediaItem } from '@/types/media';
 import { Post } from '@/types/post';
+import { Experience } from '@/types/experience';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, UserPlus, Check } from 'lucide-react';
@@ -26,6 +29,7 @@ const UserProfilePage = () => {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
   const [connectionsCount, setConnectionsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'pending' | 'none'>('none');
@@ -50,11 +54,12 @@ const UserProfilePage = () => {
 
     setLoading(true);
     try {
-      const [userProfile, userMedia, userPosts, userActivities, connCount] = await Promise.all([
+      const [userProfile, userMedia, userPosts, userActivities, userExperiences, connCount] = await Promise.all([
         getUserProfile(userId),
         getUserMedia(userId),
         getUserPosts(userId),
         getUserActivities(userId),
+        getUserPublicExperiences(userId),
         getConnectionsCount(userId),
       ]);
 
@@ -67,6 +72,7 @@ const UserProfilePage = () => {
       setMedia(userMedia);
       setPosts(userPosts);
       setActivities(userActivities);
+      setExperiences(userExperiences);
       setConnectionsCount(connCount);
 
       // Check connection status
@@ -200,6 +206,15 @@ const UserProfilePage = () => {
               <h3 className="font-semibold mb-2">About</h3>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{profile.bio}</p>
             </div>
+          )}
+
+          {/* Experience Section (public only) */}
+          {experiences.length > 0 && (
+            <ExperienceSection
+              experiences={experiences}
+              isOwnProfile={false}
+              onExperienceUpdated={() => {}}
+            />
           )}
 
           <PhotoGrid
