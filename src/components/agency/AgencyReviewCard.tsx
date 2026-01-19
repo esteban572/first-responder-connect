@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AgencyReview, RATING_CATEGORIES } from "@/types/agency";
+import { OrganizationReview, RATING_CATEGORIES } from "@/types/organization";
 import { StarRating } from "@/components/ui/StarRating";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,9 +22,9 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface AgencyReviewCardProps {
-  review: AgencyReview;
+  review: OrganizationReview;
   onHelpful?: (reviewId: string) => void;
-  onEdit?: (review: AgencyReview) => void;
+  onEdit?: (review: OrganizationReview) => void;
   onDelete?: (reviewId: string) => void;
 }
 
@@ -120,7 +120,7 @@ export function AgencyReviewCard({
       {/* Rating breakdown */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
         {RATING_CATEGORIES.slice(1).map((cat) => {
-          const rating = review[cat.key as keyof AgencyReview] as number | undefined;
+          const rating = review[cat.key as keyof OrganizationReview] as number | undefined;
           if (rating === null || rating === undefined) return null;
           return (
             <div key={cat.key} className="flex items-center justify-between text-sm">

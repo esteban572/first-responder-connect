@@ -46,6 +46,7 @@ import Meetings from "./pages/Meetings";
 import MeetingRoom from "./pages/MeetingRoom";
 import OrganizationSettings from "./pages/OrganizationSettings";
 import OrganizationSetup from "./pages/OrganizationSetup";
+import AgencySetup from "./pages/AgencySetup";
 import Billing from "./pages/Billing";
 import "@/lib/testSupabaseConnection";
 
@@ -343,7 +344,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            {/* Organization Routes */}
+            {/* Organization Routes (legacy) */}
             <Route
               path="/organization/setup"
               element={
@@ -354,6 +355,23 @@ const App = () => (
             />
             <Route
               path="/organization/settings"
+              element={
+                <ProtectedRoute>
+                  <OrganizationSettings />
+                </ProtectedRoute>
+              }
+            />
+            {/* Agency Routes (unified with organizations) */}
+            <Route
+              path="/agency/setup"
+              element={
+                <ProtectedRoute>
+                  <AgencySetup />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/agency/settings"
               element={
                 <ProtectedRoute>
                   <OrganizationSettings />

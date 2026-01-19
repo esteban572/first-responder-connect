@@ -22,21 +22,21 @@ import { StarRating } from "@/components/ui/StarRating";
 import { toast } from "sonner";
 import { Shield, AlertTriangle } from "lucide-react";
 import {
-  AgencyReview,
-  AgencyReviewCreate,
+  OrganizationReview,
+  OrganizationReviewCreate,
   EMPLOYMENT_STATUSES,
   JOB_TITLES,
   YEARS_AT_AGENCY,
   RATING_CATEGORIES,
-} from "@/types/agency";
-import { createAgencyReview, updateAgencyReview } from "@/lib/agencyService";
+} from "@/types/organization";
+import { createOrganizationReview, updateOrganizationReview } from "@/lib/organizationService";
 
 interface AgencyReviewFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   agencyId: string;
   agencyName: string;
-  review?: AgencyReview | null;
+  review?: OrganizationReview | null;
   onSaved: () => void;
 }
 
@@ -49,8 +49,8 @@ export function AgencyReviewForm({
   onSaved,
 }: AgencyReviewFormProps) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<AgencyReviewCreate>({
-    agency_id: agencyId,
+  const [formData, setFormData] = useState<OrganizationReviewCreate>({
+    organization_id: agencyId,
     rating_overall: 0,
     rating_culture: undefined,
     rating_compensation: undefined,
@@ -73,7 +73,7 @@ export function AgencyReviewForm({
     if (open) {
       if (review) {
         setFormData({
-          agency_id: review.agency_id,
+          organization_id: review.organization_id,
           rating_overall: review.rating_overall,
           rating_culture: review.rating_culture,
           rating_compensation: review.rating_compensation,
@@ -93,7 +93,7 @@ export function AgencyReviewForm({
         });
       } else {
         setFormData({
-          agency_id: agencyId,
+          organization_id: agencyId,
           rating_overall: 0,
           rating_culture: undefined,
           rating_compensation: undefined,
@@ -135,7 +135,7 @@ export function AgencyReviewForm({
     setLoading(true);
     try {
       if (review) {
-        const result = await updateAgencyReview(review.id, formData);
+        const result = await updateOrganizationReview(review.id, formData);
         if (result) {
           toast.success("Review updated");
           onSaved();
@@ -144,7 +144,7 @@ export function AgencyReviewForm({
           toast.error("Failed to update review");
         }
       } else {
-        const result = await createAgencyReview(formData);
+        const result = await createOrganizationReview(formData);
         if (result) {
           toast.success("Review submitted anonymously");
           onSaved();
@@ -276,7 +276,7 @@ export function AgencyReviewForm({
               <div key={cat.key} className="flex items-center justify-between">
                 <span className="text-sm">{cat.label}</span>
                 <StarRating
-                  rating={(formData[cat.key as keyof AgencyReviewCreate] as number) || 0}
+                  rating={(formData[cat.key as keyof OrganizationReviewCreate] as number) || 0}
                   size="sm"
                   interactive
                   onChange={(rating) => handleRatingChange(cat.key, rating)}

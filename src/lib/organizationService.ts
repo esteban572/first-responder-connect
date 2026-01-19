@@ -10,6 +10,8 @@ import {
   OrganizationInvite,
   InviteCreate,
   OrgRole,
+  OrganizationReview,
+  OrganizationReviewCreate,
 } from '@/types/organization';
 
 // ============================================
@@ -34,6 +36,14 @@ export async function createOrganization(data: OrganizationCreate): Promise<Orga
       primary_color: data.primary_color || '#f97316',
       secondary_color: data.secondary_color || '#1e3a5f',
       owner_id: user.id,
+      // Agency fields
+      city: data.city || null,
+      state: data.state || null,
+      agency_type: data.agency_type || null,
+      service_area: data.service_area || null,
+      website_url: data.website_url || null,
+      employee_count: data.employee_count || null,
+      is_public: data.is_public ?? true,
     })
     .select()
     .single();
@@ -462,4 +472,305 @@ export async function getOrganizationStats(orgId: string): Promise<{
     pendingInvites: pendingInvites || 0,
     meetingsThisMonth: meetingsThisMonth || 0,
   };
+}
+
+// ============================================
+// PUBLIC AGENCIES (Organizations with reviews)
+// ============================================
+
+export async function getPublicAgencies(options?: {
+  state?: string;
+  agency_type?: string;
+  service_area?: string;
+  search?: string;
+  min_rating?: number;
+}): Promise<Organization[]> {
+  let query = supabase
+    .from('organizations')
+    .select('*')
+    .eq('is_public', true)
+    .order('name', { ascending: true });
+
+  if (options?.state) {
+    query = query.eq('state', options.state);
+  }
+
+  if (options?.agency_type) {
+    query = query.eq('agency_type', options.agency_type);
+  }
+
+  if (options?.service_area) {
+    query = query.eq('service_area', options.service_area);
+  }
+
+  if (options?.search) {
+    query = query.or(`name.ilike.%${options.search}%,city.ilike.%${options.search}%`);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching public agencies:', error);
+    return [];
+  }
+
+  // Fetch review stats for each organization
+  if (data && data.length > 0) {
+    const orgIds = data.map(o => o.id);
+    const { data: stats } = await supabase
+      .from('organization_reviews')
+      .select('organization_id, rating_overall, would_recommend')
+      .in('organization_id', orgIds)
+      .eq('is_approved', true);
+
+    if (stats) {
+      // Calculate stats per organization
+      const statsMap = new Map<string, {
+        count: number;
+        totalRating: number;
+        recommendCount: number;
+      }>();
+
+      stats.forEach(review => {
+        const existing = statsMap.get(review.organization_id) || {
+          count: 0,
+          totalRating: 0,
+          recommendCount: 0,
+        };
+        existing.count++;
+        existing.totalRating += review.rating_overall;
+        if (review.would_recommend) existing.recommendCount++;
+        statsMap.set(review.organization_id, existing);
+      });
+
+      data.forEach(org => {
+        const orgStats = statsMap.get(org.id);
+        if (orgStats) {
+          org.review_count = orgStats.count;
+          org.avg_overall = Math.round((orgStats.totalRating / orgStats.count) * 10) / 10;
+          org.recommend_percent = Math.round((orgStats.recommendCount / orgStats.count) * 100);
+        } else {
+          org.review_count = 0;
+        }
+      });
+    }
+  }
+
+  // Filter by min rating if specified
+  if (options?.min_rating && data) {
+    return data.filter(org => (org.avg_overall || 0) >= options.min_rating!);
+  }
+
+  return data || [];
+}
+
+export async function getPublicAgency(id: string): Promise<Organization | null> {
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching agency:', error);
+    return null;
+  }
+
+  // Fetch review stats
+  const { data: stats } = await supabase
+    .from('organization_reviews')
+    .select('rating_overall, rating_culture, rating_compensation, rating_worklife, rating_equipment, rating_training, rating_management, would_recommend')
+    .eq('organization_id', id)
+    .eq('is_approved', true);
+
+  if (stats && stats.length > 0) {
+    data.review_count = stats.length;
+    data.avg_overall = Math.round((stats.reduce((sum, r) => sum + r.rating_overall, 0) / stats.length) * 10) / 10;
+    data.avg_culture = Math.round((stats.reduce((sum, r) => sum + (r.rating_culture || 0), 0) / stats.filter(r => r.rating_culture).length) * 10) / 10 || undefined;
+    data.avg_compensation = Math.round((stats.reduce((sum, r) => sum + (r.rating_compensation || 0), 0) / stats.filter(r => r.rating_compensation).length) * 10) / 10 || undefined;
+    data.avg_worklife = Math.round((stats.reduce((sum, r) => sum + (r.rating_worklife || 0), 0) / stats.filter(r => r.rating_worklife).length) * 10) / 10 || undefined;
+    data.avg_equipment = Math.round((stats.reduce((sum, r) => sum + (r.rating_equipment || 0), 0) / stats.filter(r => r.rating_equipment).length) * 10) / 10 || undefined;
+    data.avg_training = Math.round((stats.reduce((sum, r) => sum + (r.rating_training || 0), 0) / stats.filter(r => r.rating_training).length) * 10) / 10 || undefined;
+    data.avg_management = Math.round((stats.reduce((sum, r) => sum + (r.rating_management || 0), 0) / stats.filter(r => r.rating_management).length) * 10) / 10 || undefined;
+    data.recommend_percent = Math.round((stats.filter(r => r.would_recommend).length / stats.length) * 100);
+  }
+
+  return data;
+}
+
+// ============================================
+// ORGANIZATION REVIEWS
+// ============================================
+
+export async function getOrganizationReviews(orgId: string): Promise<OrganizationReview[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data, error } = await supabase
+    .from('organization_reviews')
+    .select('*')
+    .eq('organization_id', orgId)
+    .eq('is_approved', true)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching reviews:', error);
+    return [];
+  }
+
+  // Check which reviews the user has voted helpful on
+  if (user && data && data.length > 0) {
+    const reviewIds = data.map(r => r.id);
+    const { data: helpfulVotes } = await supabase
+      .from('organization_review_helpful')
+      .select('review_id')
+      .eq('user_id', user.id)
+      .in('review_id', reviewIds);
+
+    const votedSet = new Set(helpfulVotes?.map(v => v.review_id) || []);
+
+    data.forEach(review => {
+      review.user_voted_helpful = votedSet.has(review.id);
+      review.is_own_review = review.user_id === user.id;
+    });
+  }
+
+  return data || [];
+}
+
+export async function createOrganizationReview(
+  data: OrganizationReviewCreate
+): Promise<OrganizationReview | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: review, error } = await supabase
+    .from('organization_reviews')
+    .insert({
+      ...data,
+      user_id: user.id,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating review:', error);
+    return null;
+  }
+
+  return review;
+}
+
+export async function updateOrganizationReview(
+  id: string,
+  data: Partial<OrganizationReviewCreate>
+): Promise<OrganizationReview | null> {
+  const { data: review, error } = await supabase
+    .from('organization_reviews')
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating review:', error);
+    return null;
+  }
+
+  return review;
+}
+
+export async function deleteOrganizationReview(id: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('organization_reviews')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting review:', error);
+    return false;
+  }
+
+  return true;
+}
+
+export async function toggleReviewHelpful(reviewId: string): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  // Check if already voted
+  const { data: existing } = await supabase
+    .from('organization_review_helpful')
+    .select('id')
+    .eq('review_id', reviewId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (existing) {
+    // Remove vote
+    const { error } = await supabase
+      .from('organization_review_helpful')
+      .delete()
+      .eq('id', existing.id);
+
+    return !error;
+  } else {
+    // Add vote
+    const { error } = await supabase
+      .from('organization_review_helpful')
+      .insert({
+        review_id: reviewId,
+        user_id: user.id,
+      });
+
+    return !error;
+  }
+}
+
+export async function hasUserReviewedOrganization(orgId: string): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data } = await supabase
+    .from('organization_reviews')
+    .select('id')
+    .eq('organization_id', orgId)
+    .eq('user_id', user.id)
+    .single();
+
+  return !!data;
+}
+
+export async function getUserReviewForOrganization(orgId: string): Promise<OrganizationReview | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from('organization_reviews')
+    .select('*')
+    .eq('organization_id', orgId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (error) return null;
+  return data;
+}
+
+export async function getOrganizationRatingDistribution(orgId: string): Promise<Record<number, number>> {
+  const { data, error } = await supabase
+    .from('organization_reviews')
+    .select('rating_overall')
+    .eq('organization_id', orgId)
+    .eq('is_approved', true);
+
+  if (error || !data) return {};
+
+  const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  data.forEach(review => {
+    const rating = review.rating_overall;
+    if (rating >= 1 && rating <= 5) {
+      distribution[rating]++;
+    }
+  });
+
+  return distribution;
 }

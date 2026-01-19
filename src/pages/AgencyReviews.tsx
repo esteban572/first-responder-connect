@@ -1,4 +1,8 @@
+// Agency Directory & Reviews
+// Browse and review EMS agencies (organizations)
+
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,22 +14,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Search, Plus, Building2, Star } from "lucide-react";
-import { Agency, AGENCY_TYPES, SERVICE_AREAS, US_STATES } from "@/types/agency";
-import { getAgencies } from "@/lib/agencyService";
-import { AgencyCard } from "@/components/agency/AgencyCard";
-import { AddAgencyForm } from "@/components/agency/AddAgencyForm";
-import { StarRating } from "@/components/ui/StarRating";
+import { Search, Plus, Building2, Star, MapPin, Users, ExternalLink } from "lucide-react";
+import { Organization, AGENCY_TYPES, SERVICE_AREAS, US_STATES } from "@/types/organization";
+import { getPublicAgencies } from "@/lib/organizationService";
+import { useOrganization } from "@/contexts/OrganizationContext";
+import { Link } from "react-router-dom";
 
 const AgencyReviews = () => {
-  const [agencies, setAgencies] = useState<Agency[]>([]);
+  const navigate = useNavigate();
+  const { organization } = useOrganization();
+  const [agencies, setAgencies] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [serviceFilter, setServiceFilter] = useState<string>("all");
   const [minRating, setMinRating] = useState<number>(0);
-  const [addAgencyOpen, setAddAgencyOpen] = useState(false);
 
   useEffect(() => {
     loadAgencies();
@@ -34,7 +38,7 @@ const AgencyReviews = () => {
   const loadAgencies = async () => {
     setLoading(true);
     try {
-      const data = await getAgencies({
+      const data = await getPublicAgencies({
         state: stateFilter !== "all" ? stateFilter : undefined,
         agency_type: typeFilter !== "all" ? typeFilter : undefined,
         service_area: serviceFilter !== "all" ? serviceFilter : undefined,
@@ -55,10 +59,6 @@ const AgencyReviews = () => {
     loadAgencies();
   };
 
-  const handleAgencySaved = () => {
-    loadAgencies();
-  };
-
   const clearFilters = () => {
     setStateFilter("all");
     setTypeFilter("all");
@@ -74,6 +74,14 @@ const AgencyReviews = () => {
     minRating > 0 ||
     search;
 
+  const getAgencyTypeLabel = (value?: string) => {
+    return AGENCY_TYPES.find(t => t.value === value)?.label || value;
+  };
+
+  const getServiceAreaLabel = (value?: string) => {
+    return SERVICE_AREAS.find(s => s.value === value)?.label || value;
+  };
+
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto py-4 md:py-6">
@@ -82,16 +90,18 @@ const AgencyReviews = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold font-display mb-1">
-                Agency Reviews
+                Agency Directory
               </h1>
               <p className="text-muted-foreground">
-                Anonymous reviews by EMS professionals
+                Browse and review EMS agencies
               </p>
             </div>
-            <Button onClick={() => setAddAgencyOpen(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add Agency</span>
-            </Button>
+            {!organization && (
+              <Button onClick={() => navigate('/agency/setup')} className="gap-2">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Create Agency</span>
+              </Button>
+            )}
           </div>
 
           {/* Search */}
@@ -187,7 +197,96 @@ const AgencyReviews = () => {
           ) : agencies.length > 0 ? (
             <div className="space-y-4">
               {agencies.map((agency) => (
-                <AgencyCard key={agency.id} agency={agency} />
+                <Link
+                  key={agency.id}
+                  to={`/agencies/${agency.id}`}
+                  className="block"
+                >
+                  <div className="feed-card p-4 hover:border-primary/50 transition-colors">
+                    <div className="flex items-start gap-4">
+                      {/* Logo */}
+                      <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        {agency.logo_url ? (
+                          <img
+                            src={agency.logo_url}
+                            alt={agency.name}
+                            className="w-12 h-12 object-contain rounded-lg"
+                          />
+                        ) : (
+                          <Building2 className="h-8 w-8 text-primary" />
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h3 className="font-semibold text-lg truncate">
+                              {agency.name}
+                            </h3>
+                            {(agency.city || agency.state) && (
+                              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {[agency.city, agency.state].filter(Boolean).join(', ')}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Rating */}
+                          {agency.review_count && agency.review_count > 0 ? (
+                            <div className="text-right flex-shrink-0">
+                              <div className="flex items-center gap-1">
+                                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                                <span className="font-semibold text-lg">
+                                  {agency.avg_overall?.toFixed(1)}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {agency.review_count} review{agency.review_count !== 1 ? 's' : ''}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              No reviews yet
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {agency.agency_type && (
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                              {getAgencyTypeLabel(agency.agency_type)}
+                            </span>
+                          )}
+                          {agency.service_area && (
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                              {getServiceAreaLabel(agency.service_area)}
+                            </span>
+                          )}
+                          {agency.employee_count && (
+                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {agency.employee_count}
+                            </span>
+                          )}
+                          {agency.is_verified && (
+                            <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
+                              Verified
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Recommend percent */}
+                        {agency.recommend_percent !== undefined && agency.review_count && agency.review_count > 0 && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {agency.recommend_percent}% would recommend
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               ))}
             </div>
           ) : (
@@ -199,29 +298,22 @@ const AgencyReviews = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 {hasFilters
                   ? "Try adjusting your filters"
-                  : "Be the first to add an agency"}
+                  : "Be the first to create an agency"}
               </p>
               {hasFilters ? (
                 <Button variant="outline" onClick={clearFilters}>
                   Clear filters
                 </Button>
               ) : (
-                <Button onClick={() => setAddAgencyOpen(true)} className="gap-2">
+                <Button onClick={() => navigate('/agency/setup')} className="gap-2">
                   <Plus className="h-4 w-4" />
-                  Add Agency
+                  Create Agency
                 </Button>
               )}
             </div>
           )}
         </div>
       </div>
-
-      {/* Add Agency Dialog */}
-      <AddAgencyForm
-        open={addAgencyOpen}
-        onOpenChange={setAddAgencyOpen}
-        onSaved={handleAgencySaved}
-      />
     </AppLayout>
   );
 };

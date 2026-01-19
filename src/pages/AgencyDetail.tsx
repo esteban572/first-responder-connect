@@ -14,21 +14,20 @@ import {
   Star,
 } from "lucide-react";
 import {
-  Agency,
-  AgencyReview,
+  Organization,
+  OrganizationReview,
   AGENCY_TYPES,
   SERVICE_AREAS,
-  RATING_CATEGORIES,
-} from "@/types/agency";
+} from "@/types/organization";
 import {
-  getAgency,
-  getAgencyReviews,
-  toggleAgencyReviewHelpful,
-  deleteAgencyReview,
-  hasUserReviewedAgency,
-  getUserReviewForAgency,
-  getAgencyRatingDistribution,
-} from "@/lib/agencyService";
+  getPublicAgency,
+  getOrganizationReviews,
+  toggleReviewHelpful,
+  deleteOrganizationReview,
+  hasUserReviewedOrganization,
+  getUserReviewForOrganization,
+  getOrganizationRatingDistribution,
+} from "@/lib/organizationService";
 import { StarRating } from "@/components/ui/StarRating";
 import { AgencyReviewCard } from "@/components/agency/AgencyReviewCard";
 import { AgencyReviewForm } from "@/components/agency/AgencyReviewForm";
@@ -43,16 +42,27 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+// Rating categories for display
+const RATING_CATEGORIES = [
+  { key: 'rating_overall', label: 'Overall' },
+  { key: 'rating_culture', label: 'Culture' },
+  { key: 'rating_compensation', label: 'Compensation' },
+  { key: 'rating_worklife', label: 'Work-Life Balance' },
+  { key: 'rating_equipment', label: 'Equipment' },
+  { key: 'rating_training', label: 'Training' },
+  { key: 'rating_management', label: 'Management' },
+];
+
 const AgencyDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [agency, setAgency] = useState<Agency | null>(null);
-  const [reviews, setReviews] = useState<AgencyReview[]>([]);
+  const [agency, setAgency] = useState<Organization | null>(null);
+  const [reviews, setReviews] = useState<OrganizationReview[]>([]);
   const [ratingDistribution, setRatingDistribution] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [hasReviewed, setHasReviewed] = useState(false);
-  const [userReview, setUserReview] = useState<AgencyReview | null>(null);
+  const [userReview, setUserReview] = useState<OrganizationReview | null>(null);
   const [reviewFormOpen, setReviewFormOpen] = useState(false);
-  const [editingReview, setEditingReview] = useState<AgencyReview | null>(null);
+  const [editingReview, setEditingReview] = useState<OrganizationReview | null>(null);
   const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,11 +77,11 @@ const AgencyDetail = () => {
     try {
       const [agencyData, reviewsData, reviewed, existingReview, distribution] =
         await Promise.all([
-          getAgency(id),
-          getAgencyReviews(id),
-          hasUserReviewedAgency(id),
-          getUserReviewForAgency(id),
-          getAgencyRatingDistribution(id),
+          getPublicAgency(id),
+          getOrganizationReviews(id),
+          hasUserReviewedOrganization(id),
+          getUserReviewForOrganization(id),
+          getOrganizationRatingDistribution(id),
         ]);
       setAgency(agencyData);
       setReviews(reviewsData);
@@ -87,7 +97,7 @@ const AgencyDetail = () => {
   };
 
   const handleHelpful = async (reviewId: string) => {
-    const success = await toggleAgencyReviewHelpful(reviewId);
+    const success = await toggleReviewHelpful(reviewId);
     if (success) {
       setReviews((prev) =>
         prev.map((r) =>
@@ -105,14 +115,14 @@ const AgencyDetail = () => {
     }
   };
 
-  const handleEditReview = (review: AgencyReview) => {
+  const handleEditReview = (review: OrganizationReview) => {
     setEditingReview(review);
     setReviewFormOpen(true);
   };
 
   const handleDeleteReview = async () => {
     if (!deleteReviewId) return;
-    const success = await deleteAgencyReview(deleteReviewId);
+    const success = await deleteOrganizationReview(deleteReviewId);
     if (success) {
       toast.success("Review deleted");
       loadData();
@@ -332,7 +342,7 @@ const AgencyDetail = () => {
                 <div className="space-y-2">
                   {RATING_CATEGORIES.slice(1).map((cat) => {
                     const avg = agency[
-                      `avg_${cat.key.replace("rating_", "")}` as keyof Agency
+                      `avg_${cat.key.replace("rating_", "")}` as keyof Organization
                     ] as number | undefined;
                     return (
                       <div
