@@ -493,7 +493,8 @@ export async function canCreateMeeting(orgId: string): Promise<{
     }
   }
 
-  if (org.subscription_status !== 'active' && org.subscription_status !== 'trialing') {
+  // Allow free status for testing - TODO: restrict for production
+  if (org.subscription_status !== 'active' && org.subscription_status !== 'trialing' && org.subscription_status !== 'free') {
     return { allowed: false, reason: 'Subscription is not active' };
   }
 
