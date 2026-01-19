@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Users, FileText, Megaphone, TrendingUp } from 'lucide-react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -95,8 +96,8 @@ export default function AdminDashboard() {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <a
-                href="/admin/announcements/new"
+              <Link
+                to="/admin/announcements/new"
                 className="flex items-center gap-3 p-4 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors"
               >
                 <div className="p-2 rounded-lg bg-orange-500">
@@ -106,9 +107,9 @@ export default function AdminDashboard() {
                   <p className="font-medium text-gray-900">Create Announcement</p>
                   <p className="text-sm text-gray-500">Push a new announcement to all users</p>
                 </div>
-              </a>
-              <a
-                href="/admin/posts"
+              </Link>
+              <Link
+                to="/admin/posts"
                 className="flex items-center gap-3 p-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors"
               >
                 <div className="p-2 rounded-lg bg-blue-500">
@@ -118,7 +119,7 @@ export default function AdminDashboard() {
                   <p className="font-medium text-gray-900">Manage Posts</p>
                   <p className="text-sm text-gray-500">Edit or remove user posts</p>
                 </div>
-              </a>
+              </Link>
             </CardContent>
           </Card>
 

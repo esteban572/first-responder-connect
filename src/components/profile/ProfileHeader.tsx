@@ -98,7 +98,7 @@ export function ProfileHeader({
       {/* Cover Image */}
       <div
         className={cn(
-          "h-32 md:h-44 bg-gradient-hero relative group",
+          "h-40 md:h-56 bg-gradient-hero relative group",
           isOwnProfile && "cursor-pointer"
         )}
         onClick={handleCoverClick}
@@ -137,7 +137,7 @@ export function ProfileHeader({
       {/* Profile Info */}
       <div className="relative px-4 pb-4">
         {/* Avatar */}
-        <div className="absolute -top-12 left-4">
+        <div className="absolute -top-16 left-4">
           <div
             className={cn(
               "relative group",
@@ -149,11 +149,11 @@ export function ProfileHeader({
               <img
                 src={user.avatar}
                 alt={user.name}
-                className="w-24 h-24 rounded-full border-4 border-card object-cover"
+                className="w-32 h-32 rounded-full border-4 border-card object-cover shadow-lg"
               />
             ) : (
-              <div className="w-24 h-24 rounded-full border-4 border-card bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="text-2xl font-bold text-white">
+              <div className="w-32 h-32 rounded-full border-4 border-card bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
+                <span className="text-3xl font-bold text-white">
                   {user.name?.substring(0, 2).toUpperCase() || '??'}
                 </span>
               </div>
@@ -163,9 +163,9 @@ export function ProfileHeader({
             {isOwnProfile && (
               <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center">
                 {avatarUploading ? (
-                  <Loader2 className="h-6 w-6 text-white animate-spin" />
+                  <Loader2 className="h-8 w-8 text-white animate-spin" />
                 ) : (
-                  <Camera className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Camera className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 )}
               </div>
             )}
@@ -174,13 +174,13 @@ export function ProfileHeader({
 
         {/* Actions */}
         {children && (
-          <div className="flex justify-end gap-2 pt-2 mb-8">
+          <div className="flex justify-end gap-2 pt-2 mb-12">
             {children}
           </div>
         )}
 
         {/* Info */}
-        <div className={!children ? "pt-14" : ""}>
+        <div className={!children ? "pt-20" : ""}>
           <h1 className="text-xl font-bold">{user.name}</h1>
           <p className="text-muted-foreground font-medium">{user.role}</p>
 
