@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Briefcase, User, MessageCircle, Bell, Shield, Search, Settings, Newspaper } from "lucide-react";
+import { Home, Briefcase, User, MessageCircle, Bell, Shield, Search, Settings, Newspaper, CalendarDays } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,6 +46,7 @@ export function DesktopSidebar() {
   const navItems = [
     { icon: Home, label: "Feed", path: "/feed", badge: 0 },
     { icon: Briefcase, label: "Job Board", path: "/jobs", badge: 0 },
+    { icon: CalendarDays, label: "Events", path: "/events", badge: 0 },
     { icon: Newspaper, label: "Blog", path: "/blog", badge: 0 },
     { icon: Search, label: "Search Users", path: "/search", badge: 0 },
     { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadMessages },

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Briefcase, MessageCircle, Bell, Settings, Newspaper } from "lucide-react";
+import { Home, Briefcase, MessageCircle, Bell, Settings, CalendarDays } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,7 +45,7 @@ export function MobileNav() {
   const baseNavItems = [
     { icon: Home, label: "Feed", path: "/feed", badge: 0 },
     { icon: Briefcase, label: "Jobs", path: "/jobs", badge: 0 },
-    { icon: Newspaper, label: "Blog", path: "/blog", badge: 0 },
+    { icon: CalendarDays, label: "Events", path: "/events", badge: 0 },
     { icon: MessageCircle, label: "Messages", path: "/messages", badge: unreadMessages },
     { icon: Bell, label: "Alerts", path: "/alerts", badge: 0 },
   ];

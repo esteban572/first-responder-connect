@@ -27,6 +27,10 @@ import ApplicationManagement from "./pages/admin/ApplicationManagement";
 import BlogManagement from "./pages/admin/BlogManagement";
 import BlogEditor from "./pages/admin/BlogEditor";
 import ReportedPosts from "./pages/admin/ReportedPosts";
+import EventManagement from "./pages/admin/EventManagement";
+import EventEditor from "./pages/admin/EventEditor";
+import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import SavedArticles from "./pages/SavedArticles";
@@ -196,6 +200,39 @@ const App = () => (
                 <AdminRoute>
                   <ReportedPosts />
                 </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/events"
+              element={
+                <AdminRoute>
+                  <EventManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/events/:id"
+              element={
+                <AdminRoute>
+                  <EventEditor />
+                </AdminRoute>
+              }
+            />
+            {/* Event Routes */}
+            <Route
+              path="/events"
+              element={
+                <ProtectedRoute>
+                  <Events />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/:id"
+              element={
+                <ProtectedRoute>
+                  <EventDetail />
+                </ProtectedRoute>
               }
             />
             {/* Blog Routes */}
