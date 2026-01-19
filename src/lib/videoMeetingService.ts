@@ -30,13 +30,13 @@ export async function createMeeting(
       host_id: user.id,
       room_id: roomId,
       title: data.title,
-      description: data.description,
-      scheduled_at: data.scheduled_at,
+      description: data.description || null,
+      scheduled_at: data.scheduled_at || null, // Convert empty string to null
       duration_minutes: data.duration_minutes || 60,
       max_participants: data.max_participants || 10,
       recording_enabled: data.recording_enabled || false,
       waiting_room_enabled: data.waiting_room_enabled ?? true,
-      password: data.password,
+      password: data.password || null,
     })
     .select()
     .single();
