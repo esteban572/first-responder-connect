@@ -24,6 +24,7 @@ import JobEditor from "./pages/admin/JobEditor";
 import ApplicationManagement from "./pages/admin/ApplicationManagement";
 import BlogManagement from "./pages/admin/BlogManagement";
 import BlogEditor from "./pages/admin/BlogEditor";
+import ReportedPosts from "./pages/admin/ReportedPosts";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import SavedArticles from "./pages/SavedArticles";
@@ -175,6 +176,14 @@ const App = () => (
               element={
                 <AdminRoute>
                   <BlogEditor />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/reports"
+              element={
+                <AdminRoute>
+                  <ReportedPosts />
                 </AdminRoute>
               }
             />

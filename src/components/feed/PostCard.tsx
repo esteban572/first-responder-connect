@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Trash2, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +23,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { createReport } from "@/lib/reportService";
+import { REPORT_REASONS } from "@/types/report";
 
 interface PostCardProps {
   post: {
@@ -53,6 +72,10 @@ export function PostCard({ post, onLikeUpdate }: PostCardProps) {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
 
   const isOwnPost = user?.id === post.authorId;
 
@@ -98,6 +121,36 @@ export function PostCard({ post, onLikeUpdate }: PostCardProps) {
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
+    }
+  };
+
+  const handleReport = async () => {
+    if (!reportReason) {
+      toast.error('Please select a reason');
+      return;
+    }
+
+    setIsReporting(true);
+    try {
+      const success = await createReport({
+        post_id: post.id,
+        reason: reportReason,
+        description: reportDescription || undefined,
+      });
+
+      if (success) {
+        toast.success('Report submitted. Thank you for helping keep our community safe.');
+        setReportDialogOpen(false);
+        setReportReason('');
+        setReportDescription('');
+      } else {
+        toast.error('You have already reported this post');
+      }
+    } catch (error) {
+      console.error('Error reporting post:', error);
+      toast.error('Failed to submit report');
+    } finally {
+      setIsReporting(false);
     }
   };
 
@@ -182,9 +235,19 @@ export function PostCard({ post, onLikeUpdate }: PostCardProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setReportDialogOpen(true)}>
+                <Flag className="h-4 w-4 mr-2" />
+                Report Post
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
 
@@ -269,6 +332,60 @@ export function PostCard({ post, onLikeUpdate }: PostCardProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report Post</DialogTitle>
+            <DialogDescription>
+              Help us understand what's wrong with this post. Your report is anonymous.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Reason for reporting *</Label>
+              <Select value={reportReason} onValueChange={setReportReason}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a reason" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORT_REASONS.map((reason) => (
+                    <SelectItem key={reason} value={reason}>
+                      {reason}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Additional details (optional)</Label>
+              <Textarea
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                placeholder="Provide any additional context..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setReportDialogOpen(false)}
+              disabled={isReporting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleReport}
+              disabled={isReporting || !reportReason}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isReporting ? 'Submitting...' : 'Submit Report'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </article>
   );
 }

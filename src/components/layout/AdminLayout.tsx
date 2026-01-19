@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Megaphone, FileText, Briefcase, Users, ArrowLeft, LogOut, Shield, Newspaper } from 'lucide-react';
+import { LayoutDashboard, Megaphone, FileText, Briefcase, Users, ArrowLeft, LogOut, Shield, Newspaper, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ const navItems = [
   { icon: Users, label: 'Applications', path: '/admin/applications' },
   { icon: Newspaper, label: 'Blog', path: '/admin/blog' },
   { icon: FileText, label: 'Posts', path: '/admin/posts' },
+  { icon: Flag, label: 'Reports', path: '/admin/reports' },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
