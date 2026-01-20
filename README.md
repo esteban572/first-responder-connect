@@ -1,180 +1,344 @@
-# Welcome to your Lovable project
+# Paranet - First Responder Professional Network
 
-## Project info
+A professional networking platform built specifically for first responders (firefighters, EMTs, police officers, etc.). Think LinkedIn meets first responder community - featuring social feeds, job boards, agency reviews, credential management, video meetings, and more.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Tech Stack
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-- Supabase
-
-## Supabase Setup
-
-This project is configured to use Supabase for backend services. To set up Supabase:
-
-1. **Create a Supabase project** at [supabase.com](https://supabase.com)
-
-2. **Get your project credentials**:
-   - Go to your Supabase project settings
-   - Navigate to Settings > API
-   - Copy your Project URL and anon/public key
-
-3. **Configure environment variables**:
-   - Create a `.env` file in the root directory (if it doesn't exist)
-   - Add your Supabase credentials:
-     ```
-     VITE_SUPABASE_URL=your-project-url
-     VITE_SUPABASE_ANON_KEY=your-anon-key
-     ```
-
-4. **Configure Google OAuth** (for authentication):
-   - Go to your Supabase project dashboard
-   - Navigate to Authentication > Providers
-   - Enable the Google provider
-   - Add your Google OAuth credentials:
-     - Get Client ID and Client Secret from [Google Cloud Console](https://console.cloud.google.com/)
-     - Create a new OAuth 2.0 Client ID (Web application)
-     - Add authorized redirect URI: `https://ibatkglpnvqjserqfjmm.supabase.co/auth/v1/callback`
-     - Copy the Client ID and Client Secret to Supabase
-   - Save the configuration
-
-5. **Use Supabase in your code**:
-   ```typescript
-   import { supabase } from '@/lib/supabase';
-   
-   // Example: Fetch data
-   const { data, error } = await supabase
-     .from('your_table')
-     .select('*');
-   ```
-
-## Authentication
-
-This app uses Google OAuth for authentication via Supabase. Users must sign in with Google to access protected routes.
-
-- **Home page** (`/`): Sign-in page with Google authentication
-- **Protected routes**: Feed, Jobs, Profile, Messages, and Alerts require authentication
-- **Sign out**: Available in the desktop sidebar
-
-## Database Setup
-
-Before using the app, you need to set up the database schema in Supabase:
-
-1. Go to your Supabase project dashboard
-2. Navigate to **SQL Editor**
-3. Copy and paste the contents of `DATABASE_SCHEMA.sql`
-4. Run the SQL script to create the required tables:
-   - `profiles` - User profile information
-   - `connections` - User connections/friendships
-   - `media` - Photos and videos for user profiles
-   - `posts` - Feed posts from users
-   - `post_likes` - Post likes tracking
-5. The script will also set up:
-   - Row Level Security (RLS) policies
-   - Automatic profile creation on user signup
-   - Functions for incrementing/decrementing post likes
-   - Indexes for better query performance
+- **Frontend**: React 18, TypeScript, Vite
+- **UI Components**: shadcn/ui, Tailwind CSS, Radix UI
+- **Backend**: Supabase (PostgreSQL, Auth, Storage, Realtime)
+- **Video Meetings**: Daily.co integration
+- **Payments**: Stripe + RevenueCat (for subscriptions)
+- **State Management**: React Query, React Context
+- **Routing**: React Router v6
 
 ## Features
 
-### User Profiles
-- **Edit Profile**: Users can edit their profile information including name, role, location, bio, credentials, and images
-- **View Profile**: View your own profile or other users' profiles
-- **Profile Search**: Search for users by name, role, or location
+### Core Social Features
+- **Social Feed** - Share posts with text, images, and location tags
+- **User Profiles** - Comprehensive profiles with bio, credentials, media wall
+- **Connections** - Send/accept connection requests, view mutual connections
+- **Direct Messages** - Real-time messaging with read receipts
+- **Notifications/Alerts** - Connection requests, agency invites, system alerts
+- **User Search** - Find users by name, role, location, or agency
 
-### User Interactions
-- **Connect**: Send connection requests to other users
-- **Message**: Navigate to messages with other users
-- **View Connections**: See connection status (pending, accepted, etc.)
+### Professional Features
+- **Job Board** - Browse and apply to first responder job postings
+- **Credentials Manager** - Track certifications with expiration reminders
+- **Credential Showcase** - Public shareable page of your certifications
+- **Agency Reviews** - Rate and review fire departments, EMS agencies, etc.
+- **Gear Reviews** - Review equipment and gear with ratings
 
-### Media Management
-- **Upload Photos & Videos**: Add photos and videos to your profile wall
-- **Delete Media**: Remove photos and videos from your wall
-- **View Media**: Browse photos and videos on your own and other users' profiles
-- **Captions**: Add optional captions to your media
+### Organization/Agency Features
+- **Agency Management** - Create and manage your agency/organization
+- **Team Members** - Invite members via email or shareable link
+- **Role-Based Access** - Owner, Admin, Member, Viewer roles
+- **Agency Branding** - Custom logo, colors, and URL slug
+- **Subscription Plans** - Free, Pro, Enterprise tiers with different limits
 
-### Posts & Feed
-- **Create Posts**: Share text, images, and location updates in the feed
-- **View Feed**: See posts from all users in chronological order
-- **Like Posts**: Like and unlike posts from other users
-- **Post Images**: Attach images to your posts
-- **Location Tags**: Add location information to your posts
+### Groups
+- **Public Groups** - Open communities anyone can join
+- **Private Groups** - Invite-only groups with approval workflow
+- **Group Roles** - Owner, Admin, Moderator, Member
+- **Group Management** - Member list, invite system, settings
 
-### Navigation
-- **Search Users**: Added to sidebar and mobile navigation
-- **User Profile Pages**: Accessible via `/user/:userId` route
+### Content & Events
+- **Blog** - Admin-published articles with save/bookmark feature
+- **Events** - Community events with RSVP functionality
+- **Announcements** - System-wide announcements from admins
 
-## Storage Setup
+### Video Meetings (Agency Members Only)
+- **Video Conferencing** - Built-in video meetings via Daily.co
+- **Meeting Scheduling** - Create instant or scheduled meetings
+- **Meeting Links** - Shareable room links for participants
+- **Agency Restriction** - Only agency members can access meetings
 
-To enable photo and video uploads, you need to set up Supabase Storage:
+### Admin Dashboard
+- Post moderation and reported content
+- User management
+- Job posting management
+- Blog/announcement editor
+- Event management
+- Analytics overview
 
-1. **Create Storage Bucket**: See `STORAGE_SETUP.md` for detailed instructions
-2. **Set Up Policies**: Configure Row Level Security policies for the bucket
-3. **Test Upload**: Try uploading a photo or video from your profile
+## Getting Started
 
-The storage bucket name should be: `profile-media`
+### Prerequisites
 
-## How can I deploy this project?
+- Node.js 18+ (recommend using [nvm](https://github.com/nvm-sh/nvm))
+- npm or yarn
+- A Supabase account (free tier works)
+- (Optional) Daily.co account for video meetings
+- (Optional) Stripe account for payments
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+### Installation
 
-## Can I connect a custom domain to my Lovable project?
+```bash
+# Clone the repository
+git clone https://github.com/esteban572/first-responder-connect.git
 
-Yes, you can!
+# Navigate to project directory
+cd first-responder-connect
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Install dependencies
+npm install
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+# Start development server
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`
+
+## Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+# Required - Supabase
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+
+# Optional - Daily.co Video Meetings
+VITE_DAILY_API_KEY=your-daily-api-key
+
+# Optional - Stripe Payments
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+# Optional - RevenueCat (Mobile Subscriptions)
+VITE_REVENUECAT_API_KEY=your-revenuecat-key
+
+# Optional - Email Service (Mailgun)
+VITE_EMAIL_PROVIDER=none
+VITE_MAILGUN_API_KEY=your-mailgun-key
+VITE_MAILGUN_DOMAIN=mg.yourdomain.com
+VITE_FROM_EMAIL=noreply@paranet.app
+VITE_FROM_NAME=Paranet
+```
+
+## Supabase Setup
+
+### 1. Create a Supabase Project
+
+1. Go to [supabase.com](https://supabase.com) and create a new project
+2. Note your Project URL and anon key from Settings > API
+
+### 2. Configure Authentication
+
+1. Go to Authentication > Providers
+2. Enable **Google** provider:
+   - Create OAuth credentials at [Google Cloud Console](https://console.cloud.google.com/)
+   - Add redirect URI: `https://your-project.supabase.co/auth/v1/callback`
+   - Copy Client ID and Secret to Supabase
+3. (Optional) Enable other providers as needed
+
+### 3. Set Up Database Schema
+
+Run the SQL migrations in your Supabase SQL Editor. The migrations are located in:
+
+```
+supabase/migrations/
+```
+
+Key tables include:
+- `profiles` - User profiles
+- `posts`, `post_likes`, `post_comments` - Social feed
+- `connections` - User connections
+- `messages`, `conversations` - Direct messaging
+- `jobs`, `job_applications` - Job board
+- `credentials` - User certifications
+- `organizations`, `organization_members`, `organization_invites` - Agencies
+- `groups`, `group_members`, `group_invites` - Social groups
+- `gear_items`, `gear_reviews` - Gear reviews
+- `agencies`, `agency_reviews` - Agency reviews
+- `events`, `event_rsvps` - Events
+- `blog_posts`, `saved_articles` - Blog
+- `video_meetings` - Meeting records
+
+### 4. Set Up Storage
+
+Create the following storage buckets in Supabase Storage:
+
+1. **profile-media** - For profile photos/videos
+2. **post-images** - For feed post images
+3. **credential-files** - For credential document uploads
+
+For each bucket, set up RLS policies to allow authenticated users to upload/read their own files. See `STORAGE_SETUP.md` for detailed instructions.
+
+### 5. Enable Realtime
+
+Enable realtime for these tables (Database > Replication):
+- `messages`
+- `conversations`
+- `posts`
+- `notifications`
+
+## Daily.co Setup (Video Meetings)
+
+1. Create account at [daily.co](https://daily.co)
+2. Get your API key from the dashboard
+3. Add `VITE_DAILY_API_KEY` to your `.env`
+4. Meetings are restricted to agency members only
+
+## Development Workflow
+
+### Running Locally
+
+```bash
+# Start dev server with hot reload
+npm run dev
+
+# Run type checking
+npm run typecheck
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+### Project Structure
+
+```
+src/
+├── components/       # Reusable UI components
+│   ├── ui/          # shadcn/ui components
+│   ├── layout/      # App layout (sidebar, nav)
+│   ├── feed/        # Feed-related components
+│   ├── groups/      # Group components
+│   └── agency/      # Agency/org components
+├── contexts/        # React contexts (Auth, Organization)
+├── hooks/           # Custom React hooks
+├── lib/             # Service functions & utilities
+│   ├── supabase.ts  # Supabase client
+│   ├── *Service.ts  # Feature service functions
+│   └── utils.ts     # Utility functions
+├── pages/           # Page components
+│   └── admin/       # Admin dashboard pages
+├── types/           # TypeScript type definitions
+└── App.tsx          # Main app with routes
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/lib/supabase.ts` | Supabase client configuration |
+| `src/contexts/AuthContext.tsx` | Authentication state & methods |
+| `src/contexts/OrganizationContext.tsx` | Organization/agency context |
+| `src/lib/organizationService.ts` | Agency CRUD operations |
+| `src/lib/groupService.ts` | Groups CRUD operations |
+| `src/lib/messageService.ts` | Messaging functions |
+| `src/lib/videoMeetingService.ts` | Video meeting functions |
+
+## Pushing Changes
+
+### Standard Git Workflow
+
+```bash
+# Check current status
+git status
+
+# Stage your changes
+git add .
+
+# Commit with descriptive message
+git commit -m "Add feature: description of what you added"
+
+# Push to remote
+git push origin main
+```
+
+### Commit Message Guidelines
+
+Use clear, descriptive commit messages:
+
+```
+feat: Add agency invite link functionality
+fix: Resolve video meeting access check
+refactor: Simplify group member queries
+docs: Update README with setup instructions
+```
+
+### Before Pushing
+
+1. **Run the build** to catch TypeScript errors:
+   ```bash
+   npm run build
+   ```
+
+2. **Test locally** - verify your changes work
+
+3. **Check for console errors** in browser dev tools
+
+## Database Migrations
+
+When adding new features that require database changes:
+
+1. Create a new migration file in `supabase/migrations/`
+2. Name it with date prefix: `20260120_feature_name.sql`
+3. Include:
+   - Table creation
+   - Indexes
+   - RLS policies
+   - Triggers (if needed)
+
+4. Run the SQL in Supabase SQL Editor
+5. Commit the migration file
+
+## Deployment
+
+### Via Lovable
+
+1. Open your [Lovable project](https://lovable.dev)
+2. Click Share > Publish
+3. Your app will be deployed to a `.lovable.app` domain
+
+### Via Vercel/Netlify
+
+1. Connect your GitHub repo
+2. Set environment variables in dashboard
+3. Deploy with default Vite settings
+
+### Custom Domain
+
+In Lovable: Project > Settings > Domains > Connect Domain
+
+## Troubleshooting
+
+### Common Issues
+
+**Posts not showing**: Check RLS policies on `posts` table. See `TROUBLESHOOTING_POSTS.md`
+
+**Auth not working**: Verify Google OAuth redirect URI matches your Supabase project URL
+
+**Storage uploads failing**: Check bucket exists and RLS policies are configured. See `STORAGE_SETUP.md`
+
+**Video meetings not working**: Verify Daily.co API key and that user is in an organization
+
+### Debug Tips
+
+1. Check browser console for errors
+2. Check Supabase logs (Database > Logs)
+3. Verify environment variables are set correctly
+4. Test Supabase connection: check console for "Supabase connection test" log
+
+## Additional Documentation
+
+- `SUPABASE_SETUP.md` - Detailed Supabase configuration
+- `STORAGE_SETUP.md` - Storage bucket setup guide
+- `TROUBLESHOOTING_POSTS.md` - Feed/posts debugging
+- `DIAGNOSTIC_CHECK.md` - System diagnostics
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make your changes
+4. Run build to verify: `npm run build`
+5. Commit and push
+6. Open a Pull Request
+
+## License
+
+Private project - All rights reserved
