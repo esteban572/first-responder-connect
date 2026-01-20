@@ -48,6 +48,8 @@ import OrganizationSettings from "./pages/OrganizationSettings";
 import OrganizationSetup from "./pages/OrganizationSetup";
 import AgencySetup from "./pages/AgencySetup";
 import Billing from "./pages/Billing";
+import Groups from "./pages/Groups";
+import GroupDetail from "./pages/GroupDetail";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -341,6 +343,23 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <MeetingRoom />
+                </ProtectedRoute>
+              }
+            />
+            {/* Groups Routes */}
+            <Route
+              path="/groups"
+              element={
+                <ProtectedRoute>
+                  <Groups />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/groups/:groupId"
+              element={
+                <ProtectedRoute>
+                  <GroupDetail />
                 </ProtectedRoute>
               }
             />

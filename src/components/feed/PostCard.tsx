@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Trash2, Flag } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Trash2, Flag, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -42,6 +42,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { createReport } from "@/lib/reportService";
 import { REPORT_REASONS } from "@/types/report";
+import { useOrganization } from "@/contexts/OrganizationContext";
+import { InviteToAgencyDialog } from "@/components/agency/InviteToAgencyDialog";
 
 interface PostCardProps {
   post: {
@@ -65,6 +67,7 @@ interface PostCardProps {
 export function PostCard({ post, onLikeUpdate }: PostCardProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { organization, isOwner, isAdmin } = useOrganization();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes);
   const [commentCount, setCommentCount] = useState(post.comments);
@@ -76,8 +79,10 @@ export function PostCard({ post, onLikeUpdate }: PostCardProps) {
   const [reportReason, setReportReason] = useState('');
   const [reportDescription, setReportDescription] = useState('');
   const [isReporting, setIsReporting] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
   const isOwnPost = user?.id === post.authorId;
+  const canInvite = !isOwnPost && organization && (isOwner || isAdmin) && post.authorId;
 
   useEffect(() => {
     // Check if user has liked this post
@@ -242,6 +247,12 @@ export function PostCard({ post, onLikeUpdate }: PostCardProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {canInvite && (
+                <DropdownMenuItem onClick={() => setInviteDialogOpen(true)}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Invite to Agency
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => setReportDialogOpen(true)}>
                 <Flag className="h-4 w-4 mr-2" />
                 Report Post
@@ -386,6 +397,16 @@ export function PostCard({ post, onLikeUpdate }: PostCardProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Invite to Agency Dialog */}
+      {canInvite && post.authorId && (
+        <InviteToAgencyDialog
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          userId={post.authorId}
+          userName={post.author.name}
+        />
+      )}
     </article>
   );
 }

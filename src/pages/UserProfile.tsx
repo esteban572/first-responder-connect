@@ -17,7 +17,9 @@ import { Post } from '@/types/post';
 import { Experience } from '@/types/experience';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, UserPlus, Check } from 'lucide-react';
+import { MessageCircle, UserPlus, Check, Building2 } from 'lucide-react';
+import { useOrganization } from '@/contexts/OrganizationContext';
+import { InviteToAgencyDialog } from '@/components/agency/InviteToAgencyDialog';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
 
@@ -25,6 +27,7 @@ const UserProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const { organization, isOwner, isAdmin } = useOrganization();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -34,6 +37,9 @@ const UserProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'pending' | 'none'>('none');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+
+  const canInviteToAgency = organization && (isOwner || isAdmin);
 
   useEffect(() => {
     if (!userId) {
@@ -199,6 +205,17 @@ const UserProfilePage = () => {
                 Connected
               </Button>
             )}
+            {canInviteToAgency && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                onClick={() => setInviteDialogOpen(true)}
+              >
+                <Building2 className="h-4 w-4" />
+                Invite to Agency
+              </Button>
+            )}
           </ProfileHeader>
 
           {profile.bio && (
@@ -247,6 +264,16 @@ const UserProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Invite to Agency Dialog */}
+      {canInviteToAgency && userId && profile && (
+        <InviteToAgencyDialog
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          userId={userId}
+          userName={profile.full_name}
+        />
+      )}
     </AppLayout>
   );
 };

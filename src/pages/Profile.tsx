@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { PhotoGrid } from '@/components/profile/PhotoGrid';
@@ -7,7 +8,8 @@ import { ExperienceSection } from '@/components/profile/ExperienceSection';
 import { PostCard } from '@/components/feed/PostCard';
 import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Pencil, Building2, Settings } from 'lucide-react';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCurrentUserProfile, getConnectionsCount, upsertUserProfile } from '@/lib/userService';
 import { getCurrentUserMedia, uploadMedia } from '@/lib/mediaService';
@@ -23,6 +25,7 @@ import { toast } from 'sonner';
 
 const Profile = () => {
   const { user: authUser } = useAuth();
+  const { organization, role, isOwner, isAdmin } = useOrganization();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -207,6 +210,45 @@ const Profile = () => {
             <div className="feed-card p-4">
               <h3 className="font-semibold mb-2">About</h3>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{profile.bio}</p>
+            </div>
+          )}
+
+          {/* My Agency Section */}
+          {organization && (
+            <div className="feed-card p-4">
+              <h3 className="font-semibold mb-3">My Agency</h3>
+              <div className="flex items-center gap-4">
+                {organization.logo_url ? (
+                  <img
+                    src={organization.logo_url}
+                    alt={organization.name}
+                    className="w-14 h-14 rounded-lg object-cover border border-border"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Building2 className="h-7 w-7 text-primary" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-base truncate">{organization.name}</h4>
+                  <p className="text-sm text-muted-foreground capitalize">
+                    {role === 'owner' ? 'Owner' : role === 'admin' ? 'Administrator' : role === 'viewer' ? 'Viewer' : 'Member'}
+                  </p>
+                  {organization.city && organization.state && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {organization.city}, {organization.state}
+                    </p>
+                  )}
+                </div>
+                {(isOwner || isAdmin) && (
+                  <Link to="/agency/settings">
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Settings className="h-4 w-4" />
+                      Manage
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
           )}
 

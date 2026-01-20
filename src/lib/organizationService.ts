@@ -389,6 +389,75 @@ export async function cancelInvite(inviteId: string): Promise<boolean> {
   return true;
 }
 
+// Create a direct invite for a specific user (by user ID)
+export async function createDirectInvite(
+  orgId: string,
+  userId: string,
+  role: OrgRole = 'member'
+): Promise<OrganizationInvite | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // Get the target user's email
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('id', userId)
+    .single();
+
+  if (profileError || !profile?.email) {
+    console.error('Error fetching user profile:', profileError);
+    return null;
+  }
+
+  // Check if user is already a member
+  const { data: existingMember } = await supabase
+    .from('organization_members')
+    .select('id')
+    .eq('organization_id', orgId)
+    .eq('user_id', userId)
+    .single();
+
+  if (existingMember) {
+    console.error('User is already a member of this organization');
+    return null;
+  }
+
+  // Check if there's already a pending invite for this user
+  const { data: existingInvite } = await supabase
+    .from('organization_invites')
+    .select('id')
+    .eq('organization_id', orgId)
+    .eq('email', profile.email.toLowerCase())
+    .is('accepted_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .single();
+
+  if (existingInvite) {
+    console.error('User already has a pending invite');
+    return null;
+  }
+
+  const { data: invite, error } = await supabase
+    .from('organization_invites')
+    .insert({
+      organization_id: orgId,
+      email: profile.email.toLowerCase(),
+      user_id: userId,
+      role: role === 'owner' ? 'admin' : role, // Can't invite as owner
+      invited_by: user.id,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating direct invite:', error);
+    return null;
+  }
+
+  return invite;
+}
+
 // ============================================
 // SUBSCRIPTION HELPERS
 // ============================================

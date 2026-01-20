@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { VideoMeeting } from '@/types/organization';
-import { getMeetingByRoomId, getMeetingParticipants } from '@/lib/videoMeetingService';
+import { getMeetingByRoomId, getMeetingParticipants, canJoinMeetingByRoomId } from '@/lib/videoMeetingService';
 import { JitsiMeeting } from '@/components/video/JitsiMeeting';
 import { format } from 'date-fns';
 
@@ -34,6 +34,15 @@ export default function MeetingRoom() {
     if (!roomId) return;
 
     setLoading(true);
+
+    // First check if user can join this meeting (is in the organization)
+    const { allowed, reason } = await canJoinMeetingByRoomId(roomId);
+    if (!allowed) {
+      setError(reason || 'You do not have access to this meeting');
+      setLoading(false);
+      return;
+    }
+
     const data = await getMeetingByRoomId(roomId);
 
     if (!data) {

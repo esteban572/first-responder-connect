@@ -27,6 +27,8 @@ import {
   Trash2,
   Copy,
   Check,
+  Building2,
+  Search,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -162,6 +164,33 @@ export default function Meetings() {
         );
     }
   };
+
+  // Show agency required prompt if user has no organization
+  if (!organization) {
+    return (
+      <AppLayout>
+        <div className="max-w-2xl mx-auto py-8 px-4">
+          <div className="feed-card p-8 text-center">
+            <Building2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-xl font-semibold mb-2">Agency Required</h2>
+            <p className="text-muted-foreground mb-6">
+              Video meetings are available to agency members. Join or create an agency to access this feature.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" onClick={() => navigate('/agencies')}>
+                <Search className="h-4 w-4 mr-2" />
+                Browse Agencies
+              </Button>
+              <Button onClick={() => navigate('/agency/setup')}>
+                <Building2 className="h-4 w-4 mr-2" />
+                Create Agency
+              </Button>
+            </div>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   // Show upgrade prompt if no video feature
   if (!hasFeature('video_meetings')) {

@@ -485,6 +485,78 @@ export function getJitsiConfig(meeting: VideoMeeting, userName: string, userEmai
   };
 }
 
+// Check if user can join a meeting (must be in the meeting's organization)
+export async function canJoinMeeting(meetingId: string): Promise<{
+  allowed: boolean;
+  reason?: string;
+}> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { allowed: false, reason: 'You must be logged in to join meetings' };
+  }
+
+  // Get the meeting
+  const { data: meeting, error: meetingError } = await supabase
+    .from('video_meetings')
+    .select('organization_id')
+    .eq('id', meetingId)
+    .single();
+
+  if (meetingError || !meeting) {
+    return { allowed: false, reason: 'Meeting not found' };
+  }
+
+  // Check if user is a member of the meeting's organization
+  const { data: membership, error: memberError } = await supabase
+    .from('organization_members')
+    .select('id')
+    .eq('organization_id', meeting.organization_id)
+    .eq('user_id', user.id)
+    .single();
+
+  if (memberError || !membership) {
+    return { allowed: false, reason: 'You must be a member of this agency to join this meeting' };
+  }
+
+  return { allowed: true };
+}
+
+// Check if user can join a meeting by room ID (must be in the meeting's organization)
+export async function canJoinMeetingByRoomId(roomId: string): Promise<{
+  allowed: boolean;
+  reason?: string;
+}> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { allowed: false, reason: 'You must be logged in to join meetings' };
+  }
+
+  // Get the meeting
+  const { data: meeting, error: meetingError } = await supabase
+    .from('video_meetings')
+    .select('organization_id')
+    .eq('room_id', roomId)
+    .single();
+
+  if (meetingError || !meeting) {
+    return { allowed: false, reason: 'Meeting not found' };
+  }
+
+  // Check if user is a member of the meeting's organization
+  const { data: membership, error: memberError } = await supabase
+    .from('organization_members')
+    .select('id')
+    .eq('organization_id', meeting.organization_id)
+    .eq('user_id', user.id)
+    .single();
+
+  if (memberError || !membership) {
+    return { allowed: false, reason: 'You must be a member of this agency to join this meeting' };
+  }
+
+  return { allowed: true };
+}
+
 // Check if user can create meetings based on subscription
 export async function canCreateMeeting(orgId: string): Promise<{
   allowed: boolean;
