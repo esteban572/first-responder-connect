@@ -121,7 +121,7 @@ export default function AnnouncementEditor() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-64 bg-gray-200 rounded"></div>
             <div className="h-96 bg-gray-200 rounded"></div>
@@ -140,10 +140,10 @@ export default function AnnouncementEditor() {
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               {isEditing ? 'Edit Announcement' : 'New Announcement'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 mt-1 text-sm md:text-base">
               {isEditing
                 ? 'Update announcement details and styling'
                 : 'Create a new announcement for all users'}

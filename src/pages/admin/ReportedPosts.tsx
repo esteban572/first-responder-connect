@@ -134,18 +134,18 @@ export default function ReportedPosts() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900">Reported Posts</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Reported Posts</h1>
               {statusFilter === 'pending' && pendingCount > 0 && (
                 <Badge variant="destructive" className="text-sm">
                   {pendingCount} pending
                 </Badge>
               )}
             </div>
-            <p className="text-gray-600 mt-1">Review and manage reported content</p>
+            <p className="text-gray-600 mt-1 text-sm md:text-base">Review and manage reported content</p>
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-48">

@@ -86,11 +86,11 @@ export default function JobManagement() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Jobs</h1>
-            <p className="text-gray-600 mt-1">Manage job postings</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Jobs</h1>
+            <p className="text-gray-600 mt-1 text-sm md:text-base">Manage job postings</p>
           </div>
           <Link to="/admin/jobs/new">
             <Button className="gap-2">

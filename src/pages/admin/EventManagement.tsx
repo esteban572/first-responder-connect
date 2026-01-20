@@ -99,11 +99,11 @@ export default function EventManagement() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Events</h1>
-            <p className="text-gray-600 mt-1">Manage community events</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Events</h1>
+            <p className="text-gray-600 mt-1 text-sm md:text-base">Manage community events</p>
           </div>
           <Link to="/admin/events/new">
             <Button className="gap-2">

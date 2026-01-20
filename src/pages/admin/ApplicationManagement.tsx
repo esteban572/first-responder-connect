@@ -156,11 +156,11 @@ export default function ApplicationManagement() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Applications</h1>
-            <p className="text-gray-600 mt-1">Review and manage job applications</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Applications</h1>
+            <p className="text-gray-600 mt-1 text-sm md:text-base">Review and manage job applications</p>
           </div>
           <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as ApplicationStatus | 'all')}>
             <SelectTrigger className="w-48">
