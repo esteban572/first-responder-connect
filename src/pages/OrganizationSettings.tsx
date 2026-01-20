@@ -627,7 +627,7 @@ export default function OrganizationSettings() {
 
       {/* Invite Dialog */}
       <Dialog open={inviteDialogOpen} onOpenChange={handleCloseInviteDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Invite Team Member</DialogTitle>
             <DialogDescription>
@@ -639,60 +639,66 @@ export default function OrganizationSettings() {
 
           {createdInviteLink ? (
             // Show the invite link after creation
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                <LinkIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <p className="text-sm flex-1 truncate">{createdInviteLink}</p>
-                <Button variant="ghost" size="sm" onClick={handleCopyInviteLink}>
+            <div className="space-y-4 pb-2">
+              <div className="p-3 bg-muted rounded-lg space-y-3">
+                <div className="flex items-start gap-2">
+                  <LinkIcon className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <p className="text-sm flex-1 break-all">{createdInviteLink}</p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleCopyInviteLink}
+                  className="w-full gap-2"
+                >
                   <Copy className="h-4 w-4" />
+                  Copy Link
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
                 This invite link expires in 7 days. The invited person will be added as a <strong>{inviteRole}</strong>.
               </p>
-              <DialogFooter>
-                <Button onClick={handleCloseInviteDialog}>Done</Button>
-              </DialogFooter>
+              <Button onClick={handleCloseInviteDialog} className="w-full sm:w-auto">
+                Done
+              </Button>
             </div>
           ) : (
             // Show the invite form
-            <>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="inviteEmail">Email Address</Label>
-                  <Input
-                    id="inviteEmail"
-                    type="email"
-                    placeholder="colleague@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Role</Label>
-                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as OrgRole)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin - Can manage members and settings</SelectItem>
-                      <SelectItem value="member">Member - Full access to features</SelectItem>
-                      <SelectItem value="viewer">Viewer - Read-only access</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="space-y-4 pb-2">
+              <div className="space-y-2">
+                <Label htmlFor="inviteEmail">Email Address</Label>
+                <Input
+                  id="inviteEmail"
+                  type="email"
+                  placeholder="colleague@example.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                />
               </div>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={handleCloseInviteDialog}>
+              <div className="space-y-2">
+                <Label>Role</Label>
+                <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as OrgRole)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin - Can manage members and settings</SelectItem>
+                    <SelectItem value="member">Member - Full access to features</SelectItem>
+                    <SelectItem value="viewer">Viewer - Read-only access</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={handleCloseInviteDialog} className="w-full sm:w-auto">
                   Cancel
                 </Button>
-                <Button onClick={handleInvite} disabled={!inviteEmail.trim()}>
+                <Button onClick={handleInvite} disabled={!inviteEmail.trim()} className="w-full sm:w-auto">
                   Create Invite
                 </Button>
-              </DialogFooter>
-            </>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
