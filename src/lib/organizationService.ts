@@ -843,3 +843,152 @@ export async function getOrganizationRatingDistribution(orgId: string): Promise<
 
   return distribution;
 }
+
+// ============================================
+// USER PENDING ORGANIZATION INVITES
+// ============================================
+
+export interface PendingOrgInvite {
+  id: string;
+  organization_id: string;
+  email: string;
+  role: OrgRole;
+  invited_by: string;
+  token: string;
+  expires_at: string;
+  created_at: string;
+  organization?: {
+    id: string;
+    name: string;
+    logo_url: string | null;
+    city?: string;
+    state?: string;
+  };
+  inviter?: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  };
+}
+
+// Get pending organization invites for the current user
+export async function getUserPendingOrgInvites(): Promise<PendingOrgInvite[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  // Get invites by user_id or email
+  const { data, error } = await supabase
+    .from('organization_invites')
+    .select(`
+      *,
+      organizations (
+        id,
+        name,
+        logo_url,
+        city,
+        state
+      )
+    `)
+    .or(`user_id.eq.${user.id},email.eq.${user.email}`)
+    .is('accepted_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching pending org invites:', error);
+    return [];
+  }
+
+  if (!data || data.length === 0) return [];
+
+  // Fetch inviter profiles
+  const inviterIds = [...new Set(data.map(invite => invite.invited_by))];
+  const { data: inviters } = await supabase
+    .from('profiles')
+    .select('id, full_name, avatar_url')
+    .in('id', inviterIds);
+
+  const inviterMap = new Map((inviters || []).map(i => [i.id, i]));
+
+  return data.map(invite => ({
+    ...invite,
+    organization: invite.organizations,
+    inviter: inviterMap.get(invite.invited_by) || undefined,
+  }));
+}
+
+// Accept an organization invite
+export async function acceptOrgInvite(inviteId: string): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  // Get the invite
+  const { data: invite, error: inviteError } = await supabase
+    .from('organization_invites')
+    .select('*')
+    .eq('id', inviteId)
+    .is('accepted_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .single();
+
+  if (inviteError || !invite) {
+    console.error('Error fetching invite:', inviteError);
+    return false;
+  }
+
+  // Check if already a member
+  const { data: existingMember } = await supabase
+    .from('organization_members')
+    .select('id')
+    .eq('organization_id', invite.organization_id)
+    .eq('user_id', user.id)
+    .single();
+
+  if (existingMember) {
+    // Already a member, just mark invite as accepted
+    await supabase
+      .from('organization_invites')
+      .update({ accepted_at: new Date().toISOString() })
+      .eq('id', inviteId);
+    return true;
+  }
+
+  // Add user to organization
+  const { error: memberError } = await supabase
+    .from('organization_members')
+    .insert({
+      organization_id: invite.organization_id,
+      user_id: user.id,
+      role: invite.role || 'member',
+      invited_by: invite.invited_by,
+      invited_at: invite.created_at,
+    });
+
+  if (memberError) {
+    console.error('Error adding member:', memberError);
+    return false;
+  }
+
+  // Mark invite as accepted
+  await supabase
+    .from('organization_invites')
+    .update({ accepted_at: new Date().toISOString() })
+    .eq('id', inviteId);
+
+  return true;
+}
+
+// Decline an organization invite
+export async function declineOrgInvite(inviteId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('organization_invites')
+    .delete()
+    .eq('id', inviteId);
+
+  if (error) {
+    console.error('Error declining invite:', error);
+    return false;
+  }
+
+  return true;
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Bell, Heart, MessageCircle, Briefcase, UserPlus, X, Trash2, Check, UserCheck, UserX, Award } from "lucide-react";
+import { Bell, Heart, MessageCircle, Briefcase, UserPlus, X, Trash2, Check, UserCheck, UserX, Award, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +19,12 @@ import {
   acceptConnection,
   declineConnection,
 } from "@/lib/userService";
+import {
+  getUserPendingOrgInvites,
+  acceptOrgInvite,
+  declineOrgInvite,
+  PendingOrgInvite,
+} from "@/lib/organizationService";
 import { UserProfile } from "@/types/user";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
@@ -66,9 +72,11 @@ const Alerts = () => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
+  const [pendingOrgInvites, setPendingOrgInvites] = useState<PendingOrgInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [processingRequest, setProcessingRequest] = useState<string | null>(null);
+  const [processingInvite, setProcessingInvite] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -90,12 +98,14 @@ const Alerts = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [notificationsData, requestsData] = await Promise.all([
+      const [notificationsData, requestsData, orgInvitesData] = await Promise.all([
         getNotifications(),
         getPendingConnectionRequests(),
+        getUserPendingOrgInvites(),
       ]);
       setNotifications(notificationsData);
       setPendingRequests(requestsData);
+      setPendingOrgInvites(orgInvitesData);
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Failed to load notifications");
@@ -137,6 +147,44 @@ const Alerts = () => {
       toast.error("Failed to decline connection");
     } finally {
       setProcessingRequest(null);
+    }
+  };
+
+  const handleAcceptOrgInvite = async (invite: PendingOrgInvite) => {
+    setProcessingInvite(invite.id);
+    try {
+      const success = await acceptOrgInvite(invite.id);
+      if (success) {
+        setPendingOrgInvites((prev) => prev.filter((i) => i.id !== invite.id));
+        toast.success(`You've joined ${invite.organization?.name || 'the agency'}!`);
+        // Reload the page to update organization context
+        window.location.reload();
+      } else {
+        toast.error("Failed to accept invite");
+      }
+    } catch (error) {
+      console.error("Error accepting org invite:", error);
+      toast.error("Failed to accept invite");
+    } finally {
+      setProcessingInvite(null);
+    }
+  };
+
+  const handleDeclineOrgInvite = async (invite: PendingOrgInvite) => {
+    setProcessingInvite(invite.id);
+    try {
+      const success = await declineOrgInvite(invite.id);
+      if (success) {
+        setPendingOrgInvites((prev) => prev.filter((i) => i.id !== invite.id));
+        toast.success("Invite declined");
+      } else {
+        toast.error("Failed to decline invite");
+      }
+    } catch (error) {
+      console.error("Error declining org invite:", error);
+      toast.error("Failed to decline invite");
+    } finally {
+      setProcessingInvite(null);
     }
   };
 
@@ -318,6 +366,68 @@ const Alerts = () => {
           </div>
         )}
 
+        {/* Pending Agency Invites */}
+        {!loading && pendingOrgInvites.length > 0 && (
+          <div className="px-4 md:px-0 mb-4">
+            <h2 className="text-lg font-semibold mb-3">Agency Invites</h2>
+            <div className="feed-card divide-y divide-border">
+              {pendingOrgInvites.map((invite) => (
+                <div key={invite.id} className="flex items-center gap-3 p-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    {invite.organization?.logo_url ? (
+                      <img
+                        src={invite.organization.logo_url}
+                        alt={invite.organization.name}
+                        className="w-12 h-12 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <Building2 className="h-6 w-6 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm">
+                      {invite.organization?.name || 'Unknown Agency'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Invited by {invite.inviter?.full_name || 'someone'} as{' '}
+                      <span className="capitalize">{invite.role}</span>
+                    </p>
+                    {invite.organization?.city && invite.organization?.state && (
+                      <p className="text-xs text-muted-foreground">
+                        {invite.organization.city}, {invite.organization.state}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {formatDistanceToNow(new Date(invite.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="bg-accent hover:bg-accent/90 gap-1"
+                      onClick={() => handleAcceptOrgInvite(invite)}
+                      disabled={processingInvite === invite.id}
+                    >
+                      <Check className="h-4 w-4" />
+                      Join
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1"
+                      onClick={() => handleDeclineOrgInvite(invite)}
+                      disabled={processingInvite === invite.id}
+                    >
+                      <X className="h-4 w-4" />
+                      Decline
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Alerts List */}
         <div className="px-4 md:px-0">
           {loading ? (
@@ -385,7 +495,7 @@ const Alerts = () => {
                 );
               })}
             </div>
-          ) : pendingRequests.length === 0 ? (
+          ) : pendingRequests.length === 0 && pendingOrgInvites.length === 0 ? (
             <div className="feed-card p-12 text-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <Bell className="h-8 w-8 text-muted-foreground" />
