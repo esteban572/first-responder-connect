@@ -49,6 +49,8 @@ import {
   Check,
   X,
   ExternalLink,
+  Copy,
+  Link as LinkIcon,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -75,6 +77,7 @@ import {
   cancelInvite,
   isSlugAvailable,
 } from '@/lib/organizationService';
+import { generateInviteLink } from '@/lib/emailService';
 
 const ROLE_LABELS: Record<OrgRole, { label: string; icon: typeof Crown }> = {
   owner: { label: 'Owner', icon: Crown },
@@ -106,6 +109,7 @@ export default function OrganizationSettings() {
   const [inviteRole, setInviteRole] = useState<OrgRole>('member');
   const [removeMemberId, setRemoveMemberId] = useState<string | null>(null);
   const [slugError, setSlugError] = useState<string | null>(null);
+  const [createdInviteLink, setCreatedInviteLink] = useState<string | null>(null);
 
   useEffect(() => {
     if (organization) {
@@ -177,14 +181,31 @@ export default function OrganizationSettings() {
     });
 
     if (invite) {
-      toast.success(`Invite sent to ${inviteEmail}`);
-      setInviteDialogOpen(false);
-      setInviteEmail('');
-      setInviteRole('member');
+      // Generate and show the invite link
+      const link = generateInviteLink(invite.token);
+      setCreatedInviteLink(link);
+      toast.success('Invite created! Copy the link to share.');
       loadMembers();
     } else {
       toast.error('Failed to send invite');
     }
+  };
+
+  const handleCopyInviteLink = async () => {
+    if (!createdInviteLink) return;
+    try {
+      await navigator.clipboard.writeText(createdInviteLink);
+      toast.success('Link copied to clipboard!');
+    } catch {
+      toast.error('Failed to copy link');
+    }
+  };
+
+  const handleCloseInviteDialog = () => {
+    setInviteDialogOpen(false);
+    setInviteEmail('');
+    setInviteRole('member');
+    setCreatedInviteLink(null);
   };
 
   const handleCancelInvite = async (inviteId: string) => {
@@ -432,13 +453,32 @@ export default function OrganizationSettings() {
                               </p>
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleCancelInvite(invite.id)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                const link = generateInviteLink(invite.token);
+                                try {
+                                  await navigator.clipboard.writeText(link);
+                                  toast.success('Invite link copied!');
+                                } catch {
+                                  toast.error('Failed to copy link');
+                                }
+                              }}
+                              title="Copy invite link"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleCancelInvite(invite.id)}
+                              title="Cancel invite"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -586,50 +626,74 @@ export default function OrganizationSettings() {
       </div>
 
       {/* Invite Dialog */}
-      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+      <Dialog open={inviteDialogOpen} onOpenChange={handleCloseInviteDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Invite Team Member</DialogTitle>
             <DialogDescription>
-              Send an invitation to join your organization.
+              {createdInviteLink
+                ? 'Share this link with the person you want to invite.'
+                : 'Send an invitation to join your organization.'}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="inviteEmail">Email Address</Label>
-              <Input
-                id="inviteEmail"
-                type="email"
-                placeholder="colleague@example.com"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-              />
+          {createdInviteLink ? (
+            // Show the invite link after creation
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                <LinkIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <p className="text-sm flex-1 truncate">{createdInviteLink}</p>
+                <Button variant="ghost" size="sm" onClick={handleCopyInviteLink}>
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                This invite link expires in 7 days. The invited person will be added as a <strong>{inviteRole}</strong>.
+              </p>
+              <DialogFooter>
+                <Button onClick={handleCloseInviteDialog}>Done</Button>
+              </DialogFooter>
             </div>
+          ) : (
+            // Show the invite form
+            <>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="inviteEmail">Email Address</Label>
+                  <Input
+                    id="inviteEmail"
+                    type="email"
+                    placeholder="colleague@example.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label>Role</Label>
-              <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as OrgRole)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin - Can manage members and settings</SelectItem>
-                  <SelectItem value="member">Member - Full access to features</SelectItem>
-                  <SelectItem value="viewer">Viewer - Read-only access</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+                <div className="space-y-2">
+                  <Label>Role</Label>
+                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as OrgRole)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin - Can manage members and settings</SelectItem>
+                      <SelectItem value="member">Member - Full access to features</SelectItem>
+                      <SelectItem value="viewer">Viewer - Read-only access</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleInvite} disabled={!inviteEmail.trim()}>
-              Send Invite
-            </Button>
-          </DialogFooter>
+              <DialogFooter>
+                <Button variant="outline" onClick={handleCloseInviteDialog}>
+                  Cancel
+                </Button>
+                <Button onClick={handleInvite} disabled={!inviteEmail.trim()}>
+                  Create Invite
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 
