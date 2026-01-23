@@ -42,9 +42,8 @@ jobs:
       - name: Build for staging
         run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          VITE_DAILY_API_KEY: ${{ secrets.STAGING_DAILY_API_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       
       - name: Deploy to Vercel (Staging)
         id: deploy
@@ -101,9 +100,8 @@ jobs:
       - name: Build for production
         run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
-          VITE_DAILY_API_KEY: ${{ secrets.PROD_DAILY_API_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       
       - name: Deploy to Vercel (Production)
         id: deploy
@@ -159,8 +157,8 @@ jobs:
       - name: Build previous version
         run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       
       - name: Deploy rollback to Vercel
         uses: amondnet/vercel-action@v25
