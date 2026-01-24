@@ -16,6 +16,8 @@ dist-ssr
 .env
 .env.local
 .env.production
+.env.notion
+.env*.local
 
 # Editor directories and files
 .vscode/*
@@ -28,4 +30,3 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
-.env*.local
