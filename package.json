@@ -20,7 +20,7 @@
     "e2e:debug": "playwright test --debug",
     "e2e:report": "playwright show-report",
     "ci": "npm run lint && npm run typecheck && npm run test && npm run build",
-    "prepare": "npx playwright install --with-deps"
+    "playwright:install": "npx playwright install --with-deps"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
