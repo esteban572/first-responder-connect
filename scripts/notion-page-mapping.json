@@ -1,0 +1,102 @@
+{
+  "README.md": {
+    "pageId": "2f2717e8-cf84-8192-bb50-c225c48106b6",
+    "categoryName": "📖 README & Overview",
+    "docName": "README"
+  },
+  "docs/SETUP_SUMMARY.md": {
+    "pageId": "2f2717e8-cf84-81fc-8378-f1e5f3ccaad1",
+    "categoryName": "📋 Setup & Configuration",
+    "docName": "SETUP_SUMMARY"
+  },
+  "docs/QUICK_REFERENCE.md": {
+    "pageId": "2f2717e8-cf84-81fc-8378-f1e5f3ccaad1",
+    "categoryName": "📋 Setup & Configuration",
+    "docName": "QUICK_REFERENCE"
+  },
+  "docs/GITHUB_SECRETS_SETUP.md": {
+    "pageId": "2f2717e8-cf84-81fc-8378-f1e5f3ccaad1",
+    "categoryName": "📋 Setup & Configuration",
+    "docName": "GITHUB_SECRETS_SETUP"
+  },
+  "docs/ARCHITECTURE.md": {
+    "pageId": "2f2717e8-cf84-81f1-9334-db714ff3b75b",
+    "categoryName": "🏗️ Architecture & Design",
+    "docName": "ARCHITECTURE"
+  },
+  "docs/PRD.md": {
+    "pageId": "2f2717e8-cf84-81f1-9334-db714ff3b75b",
+    "categoryName": "🏗️ Architecture & Design",
+    "docName": "PRD"
+  },
+  "docs/API_DOCUMENTATION.md": {
+    "pageId": "2f2717e8-cf84-81f1-9334-db714ff3b75b",
+    "categoryName": "🏗️ Architecture & Design",
+    "docName": "API_DOCUMENTATION"
+  },
+  "docs/WORKFLOWS.md": {
+    "pageId": "2f2717e8-cf84-81e0-87bd-e171d7339cf2",
+    "categoryName": "🔄 Workflows & Processes",
+    "docName": "WORKFLOWS"
+  },
+  "docs/TECHNICAL_WORKFLOWS.md": {
+    "pageId": "2f2717e8-cf84-81e0-87bd-e171d7339cf2",
+    "categoryName": "🔄 Workflows & Processes",
+    "docName": "TECHNICAL_WORKFLOWS"
+  },
+  "docs/ADMIN_ORGANIZATION_WORKFLOWS.md": {
+    "pageId": "2f2717e8-cf84-81e0-87bd-e171d7339cf2",
+    "categoryName": "🔄 Workflows & Processes",
+    "docName": "ADMIN_ORGANIZATION_WORKFLOWS"
+  },
+  "docs/CI_CD_SETUP.md": {
+    "pageId": "2f2717e8-cf84-81e6-bc14-c16088653594",
+    "categoryName": "🚀 CI/CD & Deployment",
+    "docName": "CI_CD_SETUP"
+  },
+  "docs/CI_CD_QUICK_START.md": {
+    "pageId": "2f2717e8-cf84-81e6-bc14-c16088653594",
+    "categoryName": "🚀 CI/CD & Deployment",
+    "docName": "CI_CD_QUICK_START"
+  },
+  "docs/CI_CD_COMPLETE_GUIDE.md": {
+    "pageId": "2f2717e8-cf84-81e6-bc14-c16088653594",
+    "categoryName": "🚀 CI/CD & Deployment",
+    "docName": "CI_CD_COMPLETE_GUIDE"
+  },
+  "docs/CI_CD_SETUP_SUMMARY.md": {
+    "pageId": "2f2717e8-cf84-81e6-bc14-c16088653594",
+    "categoryName": "🚀 CI/CD & Deployment",
+    "docName": "CI_CD_SETUP_SUMMARY"
+  },
+  "docs/CI_CD_VISUAL_OVERVIEW.md": {
+    "pageId": "2f2717e8-cf84-81e6-bc14-c16088653594",
+    "categoryName": "🚀 CI/CD & Deployment",
+    "docName": "CI_CD_VISUAL_OVERVIEW"
+  },
+  "docs/DEPLOYMENT_GUIDE.md": {
+    "pageId": "2f2717e8-cf84-81e6-bc14-c16088653594",
+    "categoryName": "🚀 CI/CD & Deployment",
+    "docName": "DEPLOYMENT_GUIDE"
+  },
+  "docs/IMPLEMENTATION_GUIDE.md": {
+    "pageId": "2f2717e8-cf84-814d-a474-ccc6b75a377f",
+    "categoryName": "📚 Implementation",
+    "docName": "IMPLEMENTATION_GUIDE"
+  },
+  "docs/ROADMAP.md": {
+    "pageId": "2f2717e8-cf84-814d-a474-ccc6b75a377f",
+    "categoryName": "📚 Implementation",
+    "docName": "ROADMAP"
+  },
+  "docs/QA_STRATEGY.md": {
+    "pageId": "2f2717e8-cf84-814d-a474-ccc6b75a377f",
+    "categoryName": "📚 Implementation",
+    "docName": "QA_STRATEGY"
+  },
+  "CHANGELOG.md": {
+    "pageId": "2f2717e8-cf84-81bc-b1c9-c25d8b142382",
+    "categoryName": "📝 Changelog",
+    "docName": "CHANGELOG"
+  }
+}

@@ -9,10 +9,15 @@
  * 1. Create a Notion integration at https://www.notion.so/my-integrations
  * 2. Share your Notion pages with the integration
  * 3. Set NOTION_API_KEY environment variable
- * 4. Update PAGE_IDS below with your Notion page IDs
+ * 4. Run create-notion-workspace.js to create the page structure
  * 
  * Usage:
- *   node scripts/sync-to-notion.js
+ *   node scripts/sync-to-notion.js [file-path]
+ *   
+ * Examples:
+ *   node scripts/sync-to-notion.js                    # Sync all docs
+ *   node scripts/sync-to-notion.js README.md          # Sync specific file
+ *   node scripts/sync-to-notion.js docs/ARCHITECTURE.md
  */
 
 import fs from 'fs';
@@ -31,17 +36,17 @@ dotenv.config({ path: join(__dirname, '..', '.env.notion') });
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_VERSION = '2022-06-28';
 
-// Map your documentation files to Notion page IDs
-// First Responder Connect main page: 2f1717e8-cf84-8173-8d3f-ebbde3c057bd
-// Note: All docs currently sync to main page. Create sub-pages for better organization.
-const PAGE_IDS = {
-  'docs/IMPLEMENTATION_GUIDE.md': '2f1717e8-cf84-8173-8d3f-ebbde3c057bd',
-  'docs/ROADMAP.md': '2f1717e8-cf84-8173-8d3f-ebbde3c057bd',
-  'docs/QA_STRATEGY.md': '2f1717e8-cf84-8173-8d3f-ebbde3c057bd',
-  'CHANGELOG.md': '2f1717e8-cf84-8173-8d3f-ebbde3c057bd',
-  'docs/README.md': '2f1717e8-cf84-8173-8d3f-ebbde3c057bd',
-  // To organize better, create sub-pages in Notion and update IDs here
-};
+// Load page mapping from generated file
+let PAGE_MAPPING = {};
+const mappingPath = join(__dirname, 'notion-page-mapping.json');
+
+if (fs.existsSync(mappingPath)) {
+  PAGE_MAPPING = JSON.parse(fs.readFileSync(mappingPath, 'utf-8'));
+} else {
+  console.error('❌ Error: notion-page-mapping.json not found!');
+  console.error('💡 Run: node scripts/create-notion-workspace.js first');
+  process.exit(1);
+}
 
 // Notion API helper
 function notionRequest(endpoint, method, data) {
@@ -137,14 +142,56 @@ function markdownToNotionBlocks(markdown) {
         codeLines.push(lines[i]);
         i++;
       }
-      blocks.push({
-        object: 'block',
-        type: 'code',
-        code: {
-          rich_text: [{ type: 'text', text: { content: codeLines.join('\n') } }],
-          language: language,
-        },
-      });
+      
+      const codeContent = codeLines.join('\n');
+      
+      // Notion has a 2000 character limit for code blocks
+      // Split large code blocks into multiple blocks
+      if (codeContent.length > 1900) {
+        const chunks = [];
+        let currentChunk = '';
+        
+        for (const codeLine of codeLines) {
+          if ((currentChunk + codeLine + '\n').length > 1900) {
+            if (currentChunk) chunks.push(currentChunk);
+            currentChunk = codeLine + '\n';
+          } else {
+            currentChunk += codeLine + '\n';
+          }
+        }
+        if (currentChunk) chunks.push(currentChunk);
+        
+        // Add each chunk as a separate code block
+        chunks.forEach((chunk, idx) => {
+          blocks.push({
+            object: 'block',
+            type: 'code',
+            code: {
+              rich_text: [{ type: 'text', text: { content: chunk.trim() } }],
+              language: language,
+            },
+          });
+          // Add a note for continuation
+          if (idx < chunks.length - 1) {
+            blocks.push({
+              object: 'block',
+              type: 'paragraph',
+              paragraph: {
+                rich_text: [{ type: 'text', text: { content: '(continued...)' } }],
+              },
+            });
+          }
+        });
+      } else {
+        blocks.push({
+          object: 'block',
+          type: 'code',
+          code: {
+            rich_text: [{ type: 'text', text: { content: codeContent } }],
+            language: language,
+          },
+        });
+      }
     }
     // Bullet list
     else if (line.startsWith('- ') || line.startsWith('* ')) {
@@ -183,8 +230,6 @@ function markdownToNotionBlocks(markdown) {
 
 // Update a Notion page with markdown content
 async function updateNotionPage(pageId, markdown) {
-  console.log(`Updating Notion page: ${pageId}`);
-
   // First, get existing blocks
   const existingBlocks = await notionRequest(`/v1/blocks/${pageId}/children`, 'GET');
 
@@ -204,8 +249,6 @@ async function updateNotionPage(pageId, markdown) {
       children: chunk,
     });
   }
-
-  console.log(`✅ Updated page ${pageId}`);
 }
 
 // Main function
@@ -216,31 +259,65 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('🚀 Starting Notion sync...\n');
+  // Check if specific file was requested
+  const targetFile = process.argv[2];
+  let filesToSync = Object.keys(PAGE_MAPPING);
 
-  for (const [filePath, pageId] of Object.entries(PAGE_IDS)) {
-    if (pageId.startsWith('YOUR_')) {
-      console.log(`⏭️  Skipping ${filePath} (page ID not configured)`);
-      continue;
+  if (targetFile) {
+    // Normalize the path
+    const normalizedTarget = targetFile.startsWith('docs/') ? targetFile : targetFile;
+    if (PAGE_MAPPING[normalizedTarget]) {
+      filesToSync = [normalizedTarget];
+      console.log(`🎯 Syncing specific file: ${normalizedTarget}\n`);
+    } else {
+      console.error(`❌ Error: File not found in mapping: ${targetFile}`);
+      console.error('Available files:');
+      Object.keys(PAGE_MAPPING).forEach(f => console.error(`  - ${f}`));
+      process.exit(1);
     }
+  } else {
+    console.log('🚀 Starting full Notion sync...\n');
+  }
 
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (const filePath of filesToSync) {
+    const mapping = PAGE_MAPPING[filePath];
     const fullPath = path.join(__dirname, '..', filePath);
     
     if (!fs.existsSync(fullPath)) {
       console.log(`⚠️  File not found: ${filePath}`);
+      errorCount++;
       continue;
     }
+
+    console.log(`📄 Syncing: ${filePath}`);
+    console.log(`   → Category: ${mapping.categoryName}`);
+    console.log(`   → Page ID: ${mapping.pageId}`);
 
     const markdown = fs.readFileSync(fullPath, 'utf-8');
     
     try {
-      await updateNotionPage(pageId, markdown);
+      await updateNotionPage(mapping.pageId, markdown);
+      successCount++;
+      console.log(`   ✅ Success\n`);
     } catch (error) {
-      console.error(`❌ Error updating ${filePath}:`, error.message);
+      console.error(`   ❌ Error: ${error.message}\n`);
+      errorCount++;
     }
+
+    // Small delay to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 300));
   }
 
-  console.log('\n✅ Notion sync complete!');
+  console.log('\n' + '='.repeat(60));
+  console.log(`✅ Sync complete!`);
+  console.log(`   Success: ${successCount} files`);
+  if (errorCount > 0) {
+    console.log(`   Errors: ${errorCount} files`);
+  }
+  console.log('='.repeat(60));
 }
 
 main().catch(console.error);

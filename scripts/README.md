@@ -10,6 +10,39 @@ Your Notion integration is configured and ready to use!
 - **Workspace**: Esteban Ibarra's Notion
 - **API Key**: Stored in `.env.notion` (not committed to git)
 
+## 📊 Workspace Structure
+
+Your Notion workspace is organized as follows:
+
+```
+🚀 First Responder Connect (Main Page)
+├── 📖 README & Overview
+│   └── README.md
+├── 📋 Setup & Configuration
+│   ├── SETUP_SUMMARY.md
+│   ├── QUICK_REFERENCE.md
+│   └── GITHUB_SECRETS_SETUP.md
+├── 🏗️ Architecture & Design
+│   ├── ARCHITECTURE.md
+│   ├── PRD.md
+│   └── API_DOCUMENTATION.md
+├── 🚀 CI/CD & Deployment
+│   ├── CI_CD_SETUP.md
+│   ├── CI_CD_QUICK_START.md
+│   ├── CI_CD_COMPLETE_GUIDE.md
+│   ├── CI_CD_SETUP_SUMMARY.md
+│   ├── CI_CD_VISUAL_OVERVIEW.md
+│   └── DEPLOYMENT_GUIDE.md
+├── 📚 Implementation
+│   ├── IMPLEMENTATION_GUIDE.md
+│   ├── ROADMAP.md
+│   └── QA_STRATEGY.md
+└── 📝 Changelog
+    └── CHANGELOG.md
+```
+
+**Total:** 17 documentation files organized into 6 categories
+
 ## Available Scripts
 
 ### 1. Test Notion Connection
@@ -24,67 +57,124 @@ node scripts/find-notion-pages.js
 ```
 Searches for pages in your Notion workspace to help you find page IDs.
 
-### 3. Sync Documentation to Notion
+### 3. Create Workspace Structure
+```bash
+node scripts/create-notion-workspace.js
+```
+Automatically creates the hierarchical workspace structure in Notion with category pages and proper organization.
+
+**What it does:**
+- Creates 6 category pages under the main page
+- Adds emoji icons to each category
+- Generates `notion-page-mapping.json` with file-to-page mappings
+- Checks for existing pages to avoid duplicates
+
+### 4. Sync Documentation to Notion
+
+#### Sync All Files
 ```bash
 node scripts/sync-to-notion.js
 ```
-Syncs your markdown documentation files to Notion pages.
+Syncs all 17 documentation files to their respective Notion pages.
 
-**Currently syncing:**
-- `docs/IMPLEMENTATION_GUIDE.md` → First Responder Connect page
+#### Sync Specific File
+```bash
+node scripts/sync-to-notion.js README.md
+node scripts/sync-to-notion.js docs/ARCHITECTURE.md
+```
+Syncs a single documentation file to Notion.
 
-## Adding More Pages
+#### Easy Sync (Bash Script)
+```bash
+bash scripts/sync-all-docs.sh
+```
+Or make it executable and run:
+```bash
+chmod +x scripts/sync-all-docs.sh
+./scripts/sync-all-docs.sh
+```
 
-To sync additional documentation files:
+This script:
+- Checks for required files
+- Creates workspace structure if needed
+- Syncs all documentation
+- Shows a nice progress output
 
-1. **Create a sub-page in Notion**:
-   - Open your "First Responder Connect" page
-   - Click "+ Add a page" to create a sub-page
-   - Name it (e.g., "Quick Reference", "API Documentation")
+## Quick Start Guide
 
-2. **Share the page with BlackBox CLI integration**:
-   - Click "..." → "Connections" → Select "BlackBox CLI"
+### First Time Setup
 
-3. **Get the page ID**:
+1. **Verify API Connection**
    ```bash
-   node scripts/find-notion-pages.js
+   node scripts/test-notion-api.js
    ```
 
-4. **Update `scripts/sync-to-notion.js`**:
-   ```javascript
-   const PAGE_IDS = {
-     'docs/IMPLEMENTATION_GUIDE.md': '2f1717e8-cf84-8173-8d3f-ebbde3c057bd',
-     'docs/QUICK_REFERENCE.md': 'YOUR_NEW_PAGE_ID_HERE',
-     'README.md': 'ANOTHER_PAGE_ID_HERE',
-   };
-   ```
-
-5. **Run the sync**:
+2. **Create Workspace Structure**
    ```bash
-   node scripts/sync-to-notion.js
+   node scripts/create-notion-workspace.js
    ```
 
-## Notion Page Structure
+3. **Sync All Documentation**
+   ```bash
+   bash scripts/sync-all-docs.sh
+   ```
 
-Your current Notion setup:
+4. **View in Notion**
+   Open: https://www.notion.so/First-Responder-Connectwha-2f1717e8cf8481738d3febbde3c057bd
 
-```
-🚀 Project Pipeline (Database)
-  └── First Responder Connect (Page)
-      └── Implementation Guide (synced) ✅
+### Regular Updates
+
+When you update documentation files, simply run:
+```bash
+bash scripts/sync-all-docs.sh
 ```
 
-**Recommended structure:**
+Or sync specific files:
+```bash
+node scripts/sync-to-notion.js docs/ROADMAP.md
+```
 
+## File Mapping
+
+The `notion-page-mapping.json` file contains the mapping between documentation files and Notion pages:
+
+```json
+{
+  "README.md": {
+    "pageId": "2f2717e8-cf84-812d-a5ff-ce86bcf23618",
+    "categoryName": "📖 README & Overview",
+    "docName": "README"
+  },
+  "docs/ARCHITECTURE.md": {
+    "pageId": "2f2717e8-cf84-81cc-8b78-c72b2de9ee86",
+    "categoryName": "🏗️ Architecture & Design",
+    "docName": "ARCHITECTURE"
+  }
+  // ... more mappings
+}
 ```
-🚀 Project Pipeline (Database)
-  └── First Responder Connect (Page)
-      ├── README (create this)
-      ├── Implementation Guide ✅
-      ├── Quick Reference (create this)
-      ├── Deployment Guide (create this)
-      └── API Documentation (create this)
-```
+
+This file is automatically generated by `create-notion-workspace.js`.
+
+## Features
+
+### Markdown to Notion Conversion
+
+The sync script converts markdown to Notion blocks:
+
+- ✅ **Headings** (H1, H2, H3)
+- ✅ **Code blocks** with syntax highlighting
+- ✅ **Bullet lists**
+- ✅ **Numbered lists**
+- ✅ **Paragraphs**
+- ✅ **Large code blocks** (automatically split if > 2000 chars)
+
+### Smart Syncing
+
+- **Incremental updates**: Only syncs changed files when specified
+- **Rate limiting**: Includes delays to avoid API rate limits
+- **Error handling**: Continues syncing even if one file fails
+- **Progress tracking**: Shows detailed progress for each file
 
 ## Troubleshooting
 
@@ -93,13 +183,47 @@ Your current Notion setup:
 - In Notion: Page → "..." → "Connections" → Add "BlackBox CLI"
 
 ### Sync errors
-- Check that page IDs are correct
+- Check that page IDs are correct in `notion-page-mapping.json`
 - Ensure the integration has access to the pages
 - Run `node scripts/test-notion-api.js` to verify connection
 
 ### API key issues
 - Verify `.env.notion` exists and contains your API key
 - Get a new key at: https://www.notion.so/my-integrations
+
+### Workspace structure not found
+- Run `node scripts/create-notion-workspace.js` to create it
+- Or use `bash scripts/sync-all-docs.sh` which creates it automatically
+
+### Code block too large errors
+The script now automatically splits code blocks larger than 2000 characters into multiple blocks with continuation markers.
+
+## Adding New Documentation Files
+
+To add new documentation files to the sync:
+
+1. **Update `create-notion-workspace.js`**
+   
+   Add your file to the appropriate category in `WORKSPACE_STRUCTURE`:
+   ```javascript
+   '📋 Setup & Configuration': {
+     icon: '📋',
+     docs: [
+       'docs/SETUP_SUMMARY.md',
+       'docs/NEW_FILE.md',  // Add here
+     ]
+   }
+   ```
+
+2. **Recreate Workspace Structure**
+   ```bash
+   node scripts/create-notion-workspace.js
+   ```
+
+3. **Sync the New File**
+   ```bash
+   node scripts/sync-to-notion.js docs/NEW_FILE.md
+   ```
 
 ## Security
 
@@ -111,4 +235,28 @@ Your current Notion setup:
 
 - [Notion Integrations](https://www.notion.so/my-integrations)
 - [Notion API Docs](https://developers.notion.com/)
-- [First Responder Connect Page](https://www.notion.so/First-Responder-Connect-2f1717e8cf8481738d3febbde3c057bd)
+- [First Responder Connect Page](https://www.notion.so/First-Responder-Connectwha-2f1717e8cf8481738d3febbde3c057bd)
+
+## Script Files
+
+| Script | Purpose |
+|--------|---------|
+| `test-notion-api.js` | Test API connection and list accessible pages |
+| `find-notion-pages.js` | Search for pages in your workspace |
+| `create-notion-workspace.js` | Create hierarchical workspace structure |
+| `sync-to-notion.js` | Sync markdown files to Notion pages |
+| `sync-all-docs.sh` | Convenient bash script for full sync |
+| `notion-page-mapping.json` | Generated file mapping docs to pages |
+
+## Tips
+
+1. **Regular Syncing**: Set up a git hook to auto-sync on push
+2. **Selective Syncing**: Use specific file sync for quick updates
+3. **Backup**: Keep your markdown files as source of truth
+4. **Collaboration**: Share Notion pages with team members
+5. **Organization**: Use the category structure to keep docs organized
+
+---
+
+**Last Updated:** January 24, 2026  
+**Status:** ✅ Fully Operational - All 17 files synced successfully
