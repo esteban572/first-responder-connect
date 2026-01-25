@@ -44,14 +44,16 @@ const Home = () => {
               <Shield className="h-4 w-4" />
               Built by First Responders, for First Responders
             </div>
-            <h1 id="hero-heading" className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6 drop-shadow-sm">
-              Connect. Learn. Grow.
-              <br />
-              <span className="text-indigo-600">Together.</span>
-            </h1>
-            <p className="text-xl mb-8 max-w-3xl mx-auto font-medium p-8 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/40 shadow-xl text-gray-700">
-              The professional network designed exclusively for law enforcement, fire service, EMS, and dispatch professionals. Share experiences, find opportunities, and build your career.
-            </p>
+            <div className="max-w-4xl mx-auto p-8 sm:p-12 rounded-[2rem] bg-white/40 backdrop-blur-xl border border-white/50 shadow-2xl mb-10">
+              <h1 id="hero-heading" className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6 drop-shadow-sm">
+                Connect. Learn. Grow.
+                <br />
+                <span className="text-indigo-600">Together.</span>
+              </h1>
+              <p className="text-xl max-w-3xl mx-auto font-medium text-gray-800">
+                The professional network designed exclusively for law enforcement, fire service, EMS, and dispatch professionals. Share experiences, find opportunities, and build your career.
+              </p>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/login">
                 <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-6 shadow-lg shadow-indigo-200">
