@@ -54,6 +54,7 @@ import InviteAccept from "./pages/InviteAccept";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import OAuthDebug from "./pages/OAuthDebug";
+import Login from "./pages/Login";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route
               path="/feed"

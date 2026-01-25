@@ -1,302 +1,397 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Shield, Users, Briefcase, Award, MessageSquare, Calendar, Star, ArrowRight, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
 
 const Home = () => {
-  const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
-  const navigate = useNavigate();
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Form state
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-
-  useEffect(() => {
-    // If user is already authenticated, redirect to feed
-    if (user && !loading) {
-      navigate('/feed');
-    }
-  }, [user, loading, navigate]);
-
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithGoogle();
-      toast.success('Signing in with Google...');
-    } catch (error) {
-      toast.error('Failed to sign in. Please try again.');
-      console.error('Sign in error:', error);
-    }
-  };
-
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      if (isSignUp) {
-        // Sign up flow
-        if (!fullName.trim()) {
-          toast.error('Please enter your full name');
-          setIsSubmitting(false);
-          return;
-        }
-        if (password.length < 6) {
-          toast.error('Password must be at least 6 characters');
-          setIsSubmitting(false);
-          return;
-        }
-
-        const { error } = await signUpWithEmail(email, password, fullName);
-        if (error) {
-          if (error.message.includes('already registered')) {
-            toast.error('This email is already registered. Please sign in instead.');
-          } else {
-            toast.error(error.message || 'Failed to sign up. Please try again.');
-          }
-        } else {
-          toast.success('Check your email for a verification link!', {
-            description: 'Please verify your email to complete registration.',
-            duration: 6000,
-          });
-          // Reset form and switch to login
-          setEmail('');
-          setPassword('');
-          setFullName('');
-          setIsSignUp(false);
-        }
-      } else {
-        // Sign in flow
-        const { error } = await signInWithEmail(email, password);
-        if (error) {
-          if (error.message.includes('Invalid login credentials')) {
-            toast.error('Invalid email or password');
-          } else if (error.message.includes('Email not confirmed')) {
-            toast.error('Please verify your email before signing in', {
-              description: 'Check your inbox for a verification link.',
-            });
-          } else {
-            toast.error(error.message || 'Failed to sign in. Please try again.');
-          }
-        }
-      }
-    } catch (error) {
-      toast.error('An unexpected error occurred. Please try again.');
-      console.error('Auth error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-8">
-      <div className="max-w-md w-full space-y-6 text-center">
-        {/* Logo and Branding */}
-        <div className="flex flex-col items-center space-y-3">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-            <Shield className="h-10 w-10 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">Paranet</h1>
-            <p className="text-gray-600">First Responder Network</p>
+    <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-xl font-bold text-gray-900">Paranet</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link to="/login">
+                <Button variant="ghost">Sign In</Button>
+              </Link>
+              <Link to="/login">
+                <Button className="bg-indigo-600 hover:bg-indigo-700">Get Started</Button>
+              </Link>
+            </div>
           </div>
         </div>
+      </nav>
 
-        {/* Auth Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 space-y-5">
-          {/* Toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(false)}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                !isSignUp
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsSignUp(true)}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                isSignUp
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Sign Up
-            </button>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20 sm:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium mb-8">
+              <Shield className="h-4 w-4" />
+              Built by First Responders, for First Responders
+            </div>
+            <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6">
+              Connect. Learn. Grow.
+              <br />
+              <span className="text-indigo-600">Together.</span>
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              The professional network designed exclusively for law enforcement, fire service, EMS, and dispatch professionals. Share experiences, find opportunities, and build your career.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/login">
+                <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-6">
+                  Join Paranet <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <a href="#features">
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+                  Learn More
+                </Button>
+              </a>
+            </div>
+            <p className="text-sm text-gray-500 mt-6">
+              Free to join • Verified first responders only
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Everything You Need to Succeed
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Paranet provides the tools and community to help you advance your career and connect with fellow first responders.
+            </p>
           </div>
 
-          {/* Email/Password Form */}
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
-            {isSignUp && (
-              <div className="space-y-2 text-left">
-                <Label htmlFor="fullName" className="text-gray-700">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="John Doe"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="pl-10"
-                    required={isSignUp}
-                  />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mb-4">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Professional Networking</h3>
+              <p className="text-gray-600">
+                Connect with verified first responders across the country. Build your professional network and share experiences.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mb-4">
+                <Briefcase className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Job Opportunities</h3>
+              <p className="text-gray-600">
+                Discover career opportunities at agencies nationwide. Apply directly and track your applications.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mb-4">
+                <Award className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Credentials & Training</h3>
+              <p className="text-gray-600">
+                Showcase your certifications, track expiring credentials, and discover training opportunities.
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center mb-4">
+                <MessageSquare className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Community Feed</h3>
+              <p className="text-gray-600">
+                Share stories, ask questions, and learn from the collective experience of thousands of first responders.
+              </p>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-cyan-600 rounded-xl flex items-center justify-center mb-4">
+                <Calendar className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Events & Training</h3>
+              <p className="text-gray-600">
+                Stay updated on conferences, training sessions, and networking events in your area.
+              </p>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-yellow-600 rounded-xl flex items-center justify-center mb-4">
+                <Star className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Gear & Agency Reviews</h3>
+              <p className="text-gray-600">
+                Read honest reviews of equipment and agencies from fellow first responders who've been there.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              How Paranet Works
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Join thousands of first responders in just a few simple steps
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                1
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Create Your Profile</h3>
+              <p className="text-gray-600">
+                Sign up with your email or Google account. Verify your first responder status and build your professional profile.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                2
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Connect & Engage</h3>
+              <p className="text-gray-600">
+                Follow colleagues, join groups, share your experiences, and learn from the community.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                3
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Grow Your Career</h3>
+              <p className="text-gray-600">
+                Discover job opportunities, showcase your credentials, and advance your career in public safety.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Who It's For */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Built for All First Responders
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Whether you're on the front lines or behind the scenes, Paranet is your professional home
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-blue-50 rounded-xl p-6 text-center">
+              <div className="text-4xl mb-3">👮</div>
+              <h3 className="font-semibold text-gray-900 mb-2">Law Enforcement</h3>
+              <p className="text-sm text-gray-600">Officers, deputies, troopers, and investigators</p>
+            </div>
+
+            <div className="bg-red-50 rounded-xl p-6 text-center">
+              <div className="text-4xl mb-3">🚒</div>
+              <h3 className="font-semibold text-gray-900 mb-2">Fire Service</h3>
+              <p className="text-sm text-gray-600">Firefighters, engineers, and fire chiefs</p>
+            </div>
+
+            <div className="bg-green-50 rounded-xl p-6 text-center">
+              <div className="text-4xl mb-3">🚑</div>
+              <h3 className="font-semibold text-gray-900 mb-2">EMS</h3>
+              <p className="text-sm text-gray-600">Paramedics, EMTs, and emergency medical professionals</p>
+            </div>
+
+            <div className="bg-purple-50 rounded-xl p-6 text-center">
+              <div className="text-4xl mb-3">📞</div>
+              <h3 className="font-semibold text-gray-900 mb-2">Dispatch</h3>
+              <p className="text-sm text-gray-600">911 operators and communications specialists</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 bg-gradient-to-br from-indigo-50 to-purple-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Trusted by First Responders
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              See what your fellow first responders are saying about Paranet
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <p className="text-gray-700 mb-4">
+                "Paranet has been invaluable for networking with other officers across the country. I've learned so much from the community and even found my current position through the job board."
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <span className="text-indigo-600 font-semibold">JD</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Officer Johnson</p>
+                  <p className="text-sm text-gray-600">Law Enforcement</p>
                 </div>
               </div>
-            )}
+            </div>
 
-            <div className="space-y-2 text-left">
-              <Label htmlFor="email" className="text-gray-700">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  required
-                />
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <p className="text-gray-700 mb-4">
+                "As a paramedic, staying current with certifications is crucial. Paranet's credential tracking feature has saved me from letting important certs expire. Game changer!"
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <span className="text-green-600 font-semibold">SM</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Sarah Martinez</p>
+                  <p className="text-sm text-gray-600">Paramedic</p>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2 text-left">
-              <Label htmlFor="password" className="text-gray-700">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder={isSignUp ? 'Min. 6 characters' : 'Enter your password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <p className="text-gray-700 mb-4">
+                "Finally, a platform that understands the unique needs of first responders. The community is supportive, professional, and genuinely helpful."
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <span className="text-red-600 font-semibold">MT</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Captain Mike Thompson</p>
+                  <p className="text-sm text-gray-600">Fire Service</p>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <Button
-              type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-11"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  {isSignUp ? 'Creating account...' : 'Signing in...'}
-                </span>
-              ) : (
-                isSignUp ? 'Create Account' : 'Sign In'
-              )}
-            </Button>
-          </form>
-
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-br from-indigo-600 to-purple-600 text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl sm:text-5xl font-bold mb-6">
+            Ready to Join the Community?
+          </h2>
+          <p className="text-xl mb-8 text-indigo-100">
+            Connect with thousands of first responders and take your career to the next level.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/login">
+              <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 text-lg px-8 py-6">
+                Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm text-indigo-100">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Free to join
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">or continue with</span>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Verified professionals only
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              No credit card required
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-white">Paranet</span>
+              </div>
+              <p className="text-sm text-gray-400">
+                The professional network for first responders.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-white mb-4">Product</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#features" className="hover:text-white">Features</a></li>
+                <li><Link to="/login" className="hover:text-white">Sign Up</Link></li>
+                <li><Link to="/login" className="hover:text-white">Sign In</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-white mb-4">Company</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="mailto:support@paranet.tech" className="hover:text-white">Contact</a></li>
+                <li><a href="mailto:support@paranet.tech" className="hover:text-white">Support</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-white mb-4">Legal</h3>
+              <ul className="space-y-2 text-sm">
+                <li><Link to="/privacy" className="hover:text-white">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-white">Terms of Service</Link></li>
+              </ul>
             </div>
           </div>
 
-          {/* Google Sign In */}
-          <Button
-            onClick={handleGoogleSignIn}
-            type="button"
-            variant="outline"
-            className="w-full h-11 flex items-center justify-center gap-3 border-gray-300 hover:bg-gray-50"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
-            </svg>
-            Continue with Google
-          </Button>
+          <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-400">
+              © 2026 Paranet. All rights reserved.
+            </p>
+            <div className="flex gap-6">
+              <Link to="/privacy" className="text-sm hover:text-white">Privacy Policy</Link>
+              <Link to="/terms" className="text-sm hover:text-white">Terms of Service</Link>
+              <a href="mailto:support@paranet.tech" className="text-sm hover:text-white">Contact</a>
+            </div>
+          </div>
         </div>
-
-        {/* Footer */}
-        <p className="text-xs text-gray-400">
-          By continuing, you agree to our{' '}
-          <Link to="/terms" className="text-indigo-600 hover:underline">
-            Terms of Service
-          </Link>{' '}
-          and{' '}
-          <Link to="/privacy" className="text-indigo-600 hover:underline">
-            Privacy Policy
-          </Link>
-        </p>
-      </div>
-
-      {/* Additional Footer Links for Google Crawler */}
-      <footer className="mt-8 pb-8">
-        <div className="flex justify-center gap-6 text-sm text-gray-500">
-          <Link to="/privacy" className="hover:text-indigo-600 hover:underline">
-            Privacy Policy
-          </Link>
-          <span className="text-gray-300">•</span>
-          <Link to="/terms" className="hover:text-indigo-600 hover:underline">
-            Terms of Service
-          </Link>
-          <span className="text-gray-300">•</span>
-          <a href="mailto:support@paranet.tech" className="hover:text-indigo-600 hover:underline">
-            Contact
-          </a>
-        </div>
-        <p className="text-center text-xs text-gray-400 mt-4">
-          © 2026 Paranet. All rights reserved.
-        </p>
       </footer>
     </div>
   );
