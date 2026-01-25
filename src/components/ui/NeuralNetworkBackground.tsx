@@ -25,7 +25,7 @@ export function NeuralNetworkBackground() {
         const connectionDistance = 150;
         const particleSpeed = 0.5;
         const particleSize = 2;
-        const particleColor = 'rgba(99, 102, 241, 0.5)'; // Indigo-500 with opacity
+        const particleColor = 'rgba(99, 102, 241, 0.8)'; // Indigo-500 with higher opacity
         const lineColor = '99, 102, 241'; // Indigo-500
 
         const resizeCanvas = () => {
@@ -110,7 +110,6 @@ export function NeuralNetworkBackground() {
         <canvas
             ref={canvasRef}
             className="absolute inset-0 w-full h-full pointer-events-none"
-            style={{ opacity: 0.6 }} // Global opacity for the effect
         />
     );
 }

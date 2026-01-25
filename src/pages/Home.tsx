@@ -35,7 +35,7 @@ const Home = () => {
         <NeuralNetworkBackground />
 
         {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-white/40 pointer-events-none" />
+        <div className="absolute inset-0 bg-white/10 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
