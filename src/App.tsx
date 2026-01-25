@@ -51,6 +51,8 @@ import Billing from "./pages/Billing";
 import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
 import InviteAccept from "./pages/InviteAccept";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -417,6 +419,9 @@ const App = () => (
             />
             {/* Invite acceptance (public route - allows non-logged in users to see login/signup prompt) */}
             <Route path="/invite/:token" element={<InviteAccept />} />
+            {/* Legal Pages (public routes) */}
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
