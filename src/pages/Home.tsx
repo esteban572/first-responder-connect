@@ -278,6 +278,26 @@ const Home = () => {
           </Link>
         </p>
       </div>
+
+      {/* Additional Footer Links for Google Crawler */}
+      <footer className="mt-8 pb-8">
+        <div className="flex justify-center gap-6 text-sm text-gray-500">
+          <Link to="/privacy" className="hover:text-indigo-600 hover:underline">
+            Privacy Policy
+          </Link>
+          <span className="text-gray-300">•</span>
+          <Link to="/terms" className="hover:text-indigo-600 hover:underline">
+            Terms of Service
+          </Link>
+          <span className="text-gray-300">•</span>
+          <a href="mailto:support@paranet.tech" className="hover:text-indigo-600 hover:underline">
+            Contact
+          </a>
+        </div>
+        <p className="text-center text-xs text-gray-400 mt-4">
+          © 2026 Paranet. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 };
