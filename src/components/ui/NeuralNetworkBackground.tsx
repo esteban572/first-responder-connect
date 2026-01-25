@@ -21,12 +21,12 @@ export function NeuralNetworkBackground() {
         let particles: Particle[] = [];
 
         // Configuration
-        const particleCount = 80;
-        const connectionDistance = 150;
-        const particleSpeed = 0.5;
-        const particleSize = 2;
-        const particleColor = 'rgba(99, 102, 241, 0.8)'; // Indigo-500 with higher opacity
-        const lineColor = '99, 102, 241'; // Indigo-500
+        const particleCount = 100; // Increased from 80
+        const connectionDistance = 200; // Increased from 150
+        const particleSpeed = 0.6;
+        const particleSize = 3; // Increased from 2
+        const particleColor = 'rgba(79, 70, 229, 1)'; // Indigo-600, fully opaque
+        const lineColor = '79, 70, 229'; // Indigo-600
 
         const resizeCanvas = () => {
             const parent = canvas.parentElement;
@@ -41,7 +41,7 @@ export function NeuralNetworkBackground() {
             particles = [];
             const { width, height } = canvas;
             // Adjust particle count based on screen size
-            const count = width < 768 ? 40 : particleCount;
+            const count = width < 768 ? 60 : particleCount; // Increased mobile count
 
             for (let i = 0; i < count; i++) {
                 particles.push({
@@ -83,8 +83,8 @@ export function NeuralNetworkBackground() {
                     if (distance < connectionDistance) {
                         const opacity = 1 - (distance / connectionDistance);
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(${lineColor}, ${opacity * 0.5})`;
-                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = `rgba(${lineColor}, ${opacity * 0.8})`; // Increased line opacity factor
+                        ctx.lineWidth = 1.5; // Increased line width
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
                         ctx.stroke();
