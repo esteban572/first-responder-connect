@@ -6,9 +6,9 @@ import { NeuralNetworkBackground } from '@/components/ui/NeuralNetworkBackground
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50" role="navigation" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
@@ -30,7 +30,7 @@ const Home = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20 sm:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20 sm:py-32" aria-labelledby="hero-heading">
         {/* Background Effect */}
         <NeuralNetworkBackground />
 
@@ -44,12 +44,12 @@ const Home = () => {
               <Shield className="h-4 w-4" />
               Built by First Responders, for First Responders
             </div>
-            <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6 drop-shadow-sm">
+            <h1 id="hero-heading" className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6 drop-shadow-sm">
               Connect. Learn. Grow.
               <br />
               <span className="text-indigo-600">Together.</span>
             </h1>
-            <p className="text-xl mb-8 max-w-3xl mx-auto font-medium p-6 rounded-2xl bg-slate-900/70 backdrop-blur-xl border border-white/10 shadow-2xl text-slate-100 sm:text-gray-700 sm:bg-transparent sm:backdrop-blur-none sm:p-0 sm:border-none sm:shadow-none">
+            <p className="text-xl mb-8 max-w-3xl mx-auto font-medium p-6 rounded-3xl bg-slate-900/40 backdrop-blur-2xl border border-white/10 shadow-xl text-slate-100 sm:text-gray-700 sm:bg-transparent sm:backdrop-blur-none sm:p-0 sm:border-none sm:shadow-none">
               The professional network designed exclusively for law enforcement, fire service, EMS, and dispatch professionals. Share experiences, find opportunities, and build your career.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -72,10 +72,10 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
+      <section id="features" className="py-20 bg-white" aria-labelledby="features-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <h2 id="features-heading" className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               Everything You Need to Succeed
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
