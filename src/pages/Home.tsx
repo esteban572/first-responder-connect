@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { Shield, Users, Briefcase, Award, MessageSquare, Calendar, Star, ArrowRight, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+import { NeuralNetworkBackground } from '@/components/ui/NeuralNetworkBackground';
+
 const Home = () => {
   return (
     <div className="min-h-screen bg-white">
@@ -29,33 +31,40 @@ const Home = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20 sm:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Background Effect */}
+        <NeuralNetworkBackground />
+
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-white/40 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100/80 backdrop-blur-sm text-indigo-700 rounded-full text-sm font-medium mb-8 border border-indigo-200">
               <Shield className="h-4 w-4" />
               Built by First Responders, for First Responders
             </div>
-            <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6 drop-shadow-sm">
               Connect. Learn. Grow.
               <br />
               <span className="text-indigo-600">Together.</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-medium">
               The professional network designed exclusively for law enforcement, fire service, EMS, and dispatch professionals. Share experiences, find opportunities, and build your career.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/login">
-                <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-6">
+                <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-6 shadow-lg shadow-indigo-200">
                   Join Paranet <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <a href="#features">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-white/50 backdrop-blur-sm hover:bg-white/80">
                   Learn More
                 </Button>
               </a>
             </div>
-            <p className="text-sm text-gray-500 mt-6">
+            <p className="text-sm text-gray-500 mt-6 font-medium">
               Free to join • Verified first responders only
             </p>
           </div>
