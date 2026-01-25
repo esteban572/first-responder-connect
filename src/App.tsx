@@ -53,6 +53,7 @@ import GroupDetail from "./pages/GroupDetail";
 import InviteAccept from "./pages/InviteAccept";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import OAuthDebug from "./pages/OAuthDebug";
 import "@/lib/testSupabaseConnection";
 
 const queryClient = new QueryClient();
@@ -422,6 +423,8 @@ const App = () => (
             {/* Legal Pages (public routes) */}
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            {/* Debug Tools (public routes) */}
+            <Route path="/debug/oauth" element={<OAuthDebug />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
