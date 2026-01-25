@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -112,8 +112,8 @@ const Login = () => {
         {/* Logo and Branding */}
         <div className="flex flex-col items-center space-y-3">
           <Link to="/" className="flex flex-col items-center space-y-3">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-              <Shield className="h-10 w-10 text-white" />
+            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-lg overflow-hidden">
+              <img src="/logo.svg" alt="Paranet Logo" className="w-full h-full object-contain p-1" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-1">Paranet</h1>
@@ -129,22 +129,20 @@ const Login = () => {
             <button
               type="button"
               onClick={() => setIsSignUp(false)}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                !isSignUp
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${!isSignUp
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
             >
               Sign In
             </button>
             <button
               type="button"
               onClick={() => setIsSignUp(true)}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                isSignUp
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${isSignUp
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
             >
               Sign Up
             </button>

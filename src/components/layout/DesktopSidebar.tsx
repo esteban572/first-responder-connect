@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Briefcase, User, MessageCircle, Bell, Shield, Search, Settings, Newspaper, CalendarDays, Award, Wrench, Building2, Video, Users } from "lucide-react";
+import { Home, Briefcase, User, MessageCircle, Bell, Search, Settings, Newspaper, CalendarDays, Award, Wrench, Building2, Video, Users } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -88,8 +88,8 @@ export function DesktopSidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-white/10">
         <Link to="/feed" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-            <Shield className="h-6 w-6 text-white" />
+          <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center overflow-hidden">
+            <img src="/logo.svg" alt="Paranet Logo" className="w-full h-full object-contain p-1" />
           </div>
           <div>
             <h1 className="text-xl font-display font-bold tracking-tight">Paranet</h1>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Search, Bell } from "lucide-react";
+import { Search, Bell } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,8 +39,8 @@ export function Header() {
     <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-sm border-b border-border md:hidden">
       <div className="flex items-center justify-between px-4 py-3">
         <Link to="/feed" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-hero flex items-center justify-center">
-            <Shield className="h-5 w-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center overflow-hidden">
+            <img src="/logo.svg" alt="Paranet Logo" className="w-full h-full object-contain p-0.5" />
           </div>
           <span className="text-lg font-display font-bold">Paranet</span>
         </Link>

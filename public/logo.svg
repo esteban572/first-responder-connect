@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ef4444;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Shield Shape Network -->
+  <g stroke="url(#mainGradient)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer Hexagon-like Shield -->
+    <path d="M100 20 L170 50 L170 130 L100 180 L30 130 L30 50 Z" />
+    
+    <!-- Internal Network Lines -->
+    <path d="M100 20 L100 60 M100 60 L30 50 M100 60 L170 50 M30 130 L70 100 M170 130 L130 100 M100 180 L100 140" />
+    <path d="M70 100 L130 100" opacity="0.5" />
+    <path d="M30 50 L70 100 M170 50 L130 100 M70 100 L100 140 M130 100 L100 140" />
+  </g>
+
+  <!-- Nodes (Dots) -->
+  <g fill="url(#mainGradient)">
+    <circle cx="100" cy="20" r="4" />
+    <circle cx="170" cy="50" r="4" />
+    <circle cx="170" cy="130" r="4" />
+    <circle cx="100" cy="180" r="4" />
+    <circle cx="30" cy="130" r="4" />
+    <circle cx="30" cy="50" r="4" />
+    <circle cx="100" cy="60" r="4" />
+    <circle cx="70" cy="100" r="4" />
+    <circle cx="130" cy="100" r="4" />
+    <circle cx="100" cy="140" r="4" />
+  </g>
+
+  <!-- Heartbeat Line -->
+  <path d="M20 100 H60 L70 70 L85 130 L95 90 L105 100 H120" 
+        stroke="#0f172a" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Magnifying Glass with Star -->
+  <g transform="translate(110, 80)">
+    <!-- Glass Circle -->
+    <circle cx="25" cy="25" r="20" stroke="url(#mainGradient)" stroke-width="4" fill="white" fill-opacity="0.9" />
+    <!-- Handle -->
+    <line x1="40" y1="40" x2="55" y2="55" stroke="url(#mainGradient)" stroke-width="6" stroke-linecap="round" />
+    <!-- Star -->
+    <path d="M25 15 L28 22 L35 22 L30 26 L32 33 L25 29 L18 33 L20 26 L15 22 L22 22 Z" fill="#ef4444" />
+  </g>
+</svg>

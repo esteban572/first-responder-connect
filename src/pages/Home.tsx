@@ -10,8 +10,8 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
-                <Shield className="h-6 w-6 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden border border-gray-100">
+                <img src="/logo.svg" alt="Paranet Logo" className="w-full h-full object-contain p-1" />
               </div>
               <span className="text-xl font-bold text-gray-900">Paranet</span>
             </div>
@@ -345,8 +345,8 @@ const Home = () => {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-white" />
+                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center overflow-hidden">
+                  <img src="/logo.svg" alt="Paranet Logo" className="w-full h-full object-contain p-0.5" />
                 </div>
                 <span className="text-xl font-bold text-white">Paranet</span>
               </div>
