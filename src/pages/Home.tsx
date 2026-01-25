@@ -49,7 +49,7 @@ const Home = () => {
               <br />
               <span className="text-indigo-600">Together.</span>
             </h1>
-            <p className="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-medium">
+            <p className="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-medium bg-white/70 backdrop-blur-md p-4 rounded-2xl sm:bg-transparent sm:backdrop-blur-none sm:p-0">
               The professional network designed exclusively for law enforcement, fire service, EMS, and dispatch professionals. Share experiences, find opportunities, and build your career.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
